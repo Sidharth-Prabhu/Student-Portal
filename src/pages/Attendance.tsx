@@ -5,7 +5,6 @@ import { collection, getDocs } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
-  Calendar, 
   CheckCircle2, 
   XCircle, 
   Briefcase, 
@@ -14,16 +13,13 @@ import {
   Filter,
   ShieldCheck,
   TrendingUp,
-  Database,
-  ArrowLeft
+  Database
 } from 'lucide-react';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
-import { useNavigate } from 'react-router-dom';
 
 const Attendance: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [reg, setReg] = useState(user?.reg || '');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');

@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Calculator, 
   Trash2, 
   PlusCircle, 
-  Save, 
   GraduationCap,
   Award,
   BookOpen,
   Info
 } from 'lucide-react';
 import { semData, gradePoints } from '../data/semesters';
-import { clsx } from 'clsx';
 
 import { db } from '../lib/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
