@@ -12,7 +12,10 @@ import {
   Award,
   ShieldCheck,
   Lock,
-  Terminal
+  Terminal,
+  Clock,
+  Calculator,
+  Calendar
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
@@ -46,6 +49,30 @@ const adminActions = [
     icon: Database,
     path: '/database-manager',
     iconColor: 'text-orange-400'
+  }
+];
+
+const quickLinks = [
+  {
+    title: 'My Attendance',
+    path: '/attendance',
+    icon: Calendar,
+    color: 'bg-emerald-400/10',
+    iconColor: 'text-emerald-400'
+  },
+  {
+    title: 'Daily Timetable',
+    path: '/timetable',
+    icon: Clock,
+    color: 'bg-accent-blue/10',
+    iconColor: 'text-accent-blue'
+  },
+  {
+    title: 'Grades Calc',
+    path: '/cgpa',
+    icon: Calculator,
+    color: 'bg-accent-purple/10',
+    iconColor: 'text-accent-purple'
   }
 ];
 
@@ -185,10 +212,31 @@ const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Current CGPA</p>
-              <p className="text-xl font-bold text-white">{displayCgpa || 'N/A'}</p>
+              <p className={clsx("font-bold text-white", displayCgpa ? "text-xl" : "text-sm")}>
+                {displayCgpa || 'Calculate Now!'}
+              </p>
             </div>
           </Link>
         )}
+      </section>
+
+      {/* Quick Navigation Cards */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-text-secondary px-2">Quick Navigation</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {quickLinks.map((link) => (
+            <Link 
+              key={link.path}
+              to={link.path}
+              className="bg-bg-card border border-border-color p-4 rounded-2xl flex flex-col items-center gap-3 active:scale-95 transition-all shadow-sm hover:border-accent-blue/30"
+            >
+              <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", link.color)}>
+                <link.icon size={20} className={link.iconColor} />
+              </div>
+              <p className="text-[10px] font-bold text-center leading-tight">{link.title}</p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* Admin Actions or Login */}
@@ -253,12 +301,12 @@ const Dashboard: React.FC = () => {
             <ArrowRight size={20} />
           </div>
           <div>
-            <p className="text-sm font-bold">Quick Links</p>
-            <p className="text-[10px] text-text-secondary">Timetable, Exam Schedule, etc.</p>
+            <p className="text-sm font-bold">Additional Resources</p>
+            <p className="text-[10px] text-text-secondary">Exam Schedule & other tools</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Link to="/timetable" className="p-3 bg-bg-card border border-border-color rounded-2xl text-accent-blue hover:scale-105 transition-transform shadow-md">
+          <Link to="/exam-timetable" className="p-3 bg-bg-card border border-border-color rounded-2xl text-accent-blue hover:scale-105 transition-transform shadow-md">
              <ArrowRight size={20} />
           </Link>
         </div>
