@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   UserCheck, 
   ClipboardList, 
@@ -10,7 +10,6 @@ import {
   ArrowRight, 
   TrendingUp,
   Award,
-  Github,
   ShieldCheck,
   Lock,
   Terminal
@@ -56,9 +55,6 @@ const Dashboard: React.FC = () => {
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
   const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
-  const [updateAvailable, setUpdateAvailable] = useState<string | null>(null);
-
-  const CURRENT_VERSION = "v1.0.0"; // Local version
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -131,21 +127,7 @@ const Dashboard: React.FC = () => {
         }
       };
 
-      const checkUpdate = async () => {
-        try {
-          const res = await fetch('https://api.github.com/repos/Sidharth-Prabhu/AIDS-Attendance-System/releases/latest');
-          if (res.ok) {
-            const data = await res.json();
-            if (data.tag_name !== CURRENT_VERSION) {
-              setUpdateAvailable(data.tag_name);
-            }
-          }
-        } catch (e) {
-          console.error("Update check failed", e);
-        }
-      };
-
-      await Promise.all([fetchCgpa(), fetchAttendance(), checkUpdate()]);
+      await Promise.all([fetchCgpa(), fetchAttendance()]);
     };
 
     fetchData();
@@ -173,38 +155,6 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
-
-      {/* Update Notification */}
-      <AnimatePresence>
-        {updateAvailable && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-2xl flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center text-accent-blue">
-                  <Github size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold">New Update Available!</p>
-                  <p className="text-[10px] text-text-secondary">{updateAvailable} is now out.</p>
-                </div>
-              </div>
-              <a 
-                href="https://github.com/Sidharth-Prabhu/AIDS-Attendance-System/releases/latest" 
-                target="_blank" 
-                rel="noreferrer"
-                className="px-4 py-1.5 bg-accent-blue text-white text-[10px] font-bold rounded-lg shadow-lg shadow-accent-blue/20 active:scale-95 transition-transform"
-              >
-                View
-              </a>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Quick Stats Grid */}
       <section className="grid grid-cols-2 gap-4">
