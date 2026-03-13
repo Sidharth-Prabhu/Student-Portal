@@ -1,11 +1,4 @@
-export interface Student {
-  regNum: string;
-  name: string;
-  email: string;
-  phone: string;
-}
-
-export const students: Student[] = [
+[
   {
     "regNum": "2117240070251",
     "name": "Rasool M",
@@ -372,4 +365,4 @@ export const students: Student[] = [
     "email": "sorneshvaran.240312@aids.ritchennai.edu.in",
     "phone": "9876543312"
   }
-];
+]

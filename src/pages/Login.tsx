@@ -7,6 +7,7 @@ import { LogIn, AlertCircle, Hash } from 'lucide-react';
 const Login: React.FC = () => {
   const [reg, setReg] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
@@ -16,20 +17,25 @@ const Login: React.FC = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     if (!reg || reg.length < 10) {
       setError('Please enter a valid registration number.');
+      setIsLoading(false);
       return;
     }
 
-    const success = login(reg);
-    if (success) {
+    try {
+      await login(reg);
       navigate('/');
-    } else {
-      setError('Invalid registration number. Try again.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Invalid registration number.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,7 +55,7 @@ const Login: React.FC = () => {
             <LogIn className="text-white" size={32} />
           </motion.div>
           <h1 className="text-3xl font-bold gradient-text">Student Portal</h1>
-          <p className="text-text-secondary mt-2">Sign in with your registration number</p>
+          <p className="text-text-secondary mt-2">Enter your registration number to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -77,9 +83,10 @@ const Login: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            className="w-full bg-gradient-to-r from-accent-blue to-accent-purple text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-accent-blue/20 transition-all flex items-center justify-center gap-2"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-accent-blue to-accent-purple text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-accent-blue/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </motion.button>
         </form>
 

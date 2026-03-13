@@ -2,31 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Smartphone } from 'lucide-react';
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 const InstallPWA: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const [isStandalone] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean };
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      navigatorWithStandalone.standalone ||
+      document.referrer.includes('android-app://')
+    );
+  });
 
   useEffect(() => {
-    // Check if already in standalone mode
-    const checkStandalone = () => {
-      return (
-        window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone ||
-        document.referrer.includes('android-app://')
-      );
-    };
-
-    setIsStandalone(checkStandalone());
-
     const handler = (e: Event) => {
       // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault();
       // Stash the event so it can be triggered later.
-      setDeferredPrompt(e);
+      const promptEvent = e as BeforeInstallPromptEvent;
+      setDeferredPrompt(promptEvent);
       
       // Only show if not already installed/standalone
-      if (!checkStandalone()) {
+      if (!isStandalone) {
         // Show the popup after a short delay
         setTimeout(() => setShowPopup(true), 3000);
       }

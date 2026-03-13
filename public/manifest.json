@@ -14,7 +14,7 @@
       "purpose": "any"
     },
     {
-      "src": "emblem.png",
+      "src": "public/favicon.svg",
       "sizes": "192x192",
       "type": "image/png"
     }

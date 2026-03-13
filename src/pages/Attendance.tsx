@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -13,31 +13,51 @@ import {
   Filter,
   ShieldCheck,
   TrendingUp,
-  Database
+  Database,
+  type LucideIcon
 } from 'lucide-react';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
 
+interface AttendanceRecord {
+  date: string;
+  type: string;
+  color: string;
+  bg: string;
+  icon: LucideIcon;
+}
+
+interface AttendanceResults {
+  name: string;
+  regNum: string;
+  total: number;
+  present: number;
+  absent: number;
+  od: number;
+  percentage: string;
+  records: AttendanceRecord[];
+  safeLeaves: number;
+  status: string;
+}
+
 const Attendance: React.FC = () => {
   const { user } = useAuth();
-  const [reg, setReg] = useState(user?.reg || '');
+  const [reg, setReg] = useState(user?.regNum || '');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<AttendanceResults | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchAttendance = React.useCallback(async (targetReg: string) => {
+  const fetchAttendance = useCallback(async (targetReg: string) => {
     if (!targetReg) return;
 
     setIsLoading(true);
     setError('');
-    // We don't necessarily want to clear results every time if we want a smooth transition, 
-    // but for now it's fine.
 
     try {
-      const student = students.find(s => s.reg === targetReg);
+      const student = students.find(s => s.regNum === targetReg);
       if (!student) {
         throw new Error('Student not found.');
       }
@@ -56,7 +76,7 @@ const Attendance: React.FC = () => {
 
       const total = filtered.length;
       let absentCount = 0, intODCount = 0, extODCount = 0;
-      const records: any[] = [];
+      const records: AttendanceRecord[] = [];
 
       filtered.forEach(d => {
         const data = d.data();
@@ -82,30 +102,29 @@ const Attendance: React.FC = () => {
 
       setResults({
         name: student.name,
-        reg: student.reg,
+        regNum: student.regNum,
         total,
         present,
         absent: absentCount,
         od: intODCount + extODCount,
-        percentage: percentage.toFixed(1),
+        percentage: percentage.toFixed(2),
         records: records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
         safeLeaves,
         status: percentage >= 75 ? (percentage >= 85 ? 'Excellent' : 'Good') : (percentage >= 65 ? 'Warning' : 'Critical')
       });
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch data.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   }, [fromDate, toDate]);
 
-  // Load on mount if user is present
-  React.useEffect(() => {
-    if (user?.reg) {
-      fetchAttendance(user.reg);
+  useEffect(() => {
+    if (user?.regNum) {
+      fetchAttendance(user.regNum);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [user, fetchAttendance]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -281,7 +300,7 @@ const Attendance: React.FC = () => {
               <h3 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2 flex-shrink-0">History</h3>
               {results.records.length > 0 ? (
                 <div className="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-4 mask-gradient-bottom">
-                  {results.records.map((record: any, idx: number) => (
+                  {results.records.map((record, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl shrink-0">
                       <div className="flex items-center gap-3">
                         <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", record.bg)}>
