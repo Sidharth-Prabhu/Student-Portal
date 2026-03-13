@@ -206,10 +206,17 @@ const MarkAttendance: React.FC = () => {
               className="flex items-center gap-3 bg-bg-secondary p-3 rounded-2xl border border-border-color cursor-pointer active:bg-bg-secondary/80"
               onClick={(e) => {
                 const input = e.currentTarget.querySelector('input');
-                if (input && 'showPicker' in input) {
-                  try { input.showPicker(); } catch (e) {}
-                } else if (input) {
-                  input.focus();
+                if (input instanceof HTMLInputElement) {
+                  const target = input as any;
+                  try {
+                    if (target.showPicker) {
+                      target.showPicker();
+                    } else {
+                      target.focus();
+                    }
+                  } catch (err) {
+                    target.focus();
+                  }
                 }
               }}
             >

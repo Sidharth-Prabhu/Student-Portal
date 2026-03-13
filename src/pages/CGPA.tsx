@@ -41,7 +41,7 @@ const CGPA: React.FC = () => {
 
       // 2. Fetch from Firestore (New sub-collection structure)
       try {
-        const docRef = doc(db, 'user_logs', user.reg, 'academic_records', 'current');
+        const docRef = doc(db, 'user_logs', user.regNum, 'academic_records', 'current');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const cloudData = docSnap.data().semesters || [];
@@ -64,8 +64,8 @@ const CGPA: React.FC = () => {
       const totalCredits = data.reduce((sum, s) => sum + s.credits, 0);
       const cgpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : '0.00';
 
-      // Saving to sub-collection: user_logs/{reg}/academic_records/current
-      await setDoc(doc(db, 'user_logs', user.reg, 'academic_records', 'current'), {
+      // Saving to sub-collection: user_logs/{regNum}/academic_records/current
+      await setDoc(doc(db, 'user_logs', user.regNum, 'academic_records', 'current'), {
         cgpa: parseFloat(cgpa),
         semesters: data,
         lastUpdated: new Date().toISOString()
