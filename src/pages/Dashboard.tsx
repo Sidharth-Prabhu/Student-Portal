@@ -15,10 +15,11 @@ import {
   Terminal,
   Clock,
   Calculator,
-  Calendar
+  Calendar,
+  MapPin
 } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, onSnapshot, DocumentSnapshot, FirestoreError } from 'firebase/firestore';
 import { clsx } from 'clsx';
 
 const adminActions = [
@@ -82,6 +83,8 @@ const Dashboard: React.FC = () => {
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
   const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
+  const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
+  const [isLoadingSeating, setIsLoadingSeating] = useState(true);
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -154,10 +157,37 @@ const Dashboard: React.FC = () => {
         }
       };
 
+      const fetchSeating = () => {
+        setIsLoadingSeating(true);
+        const docRef = doc(db, 'seating_allocations', user.regNum);
+        
+        // Listen for real-time updates to always fetch the latest seating data
+        const unsubscribe = onSnapshot(docRef, (docSnap: DocumentSnapshot) => {
+          if (docSnap.exists()) {
+            setSeatingData(docSnap.data() as any);
+            console.log("Fetched latest seating data:", docSnap.data());
+          } else {
+            setSeatingData(null);
+          }
+          setIsLoadingSeating(false);
+        }, (error: FirestoreError) => {
+          console.error("Seating fetch error", error);
+          setIsLoadingSeating(false);
+        });
+        
+        return unsubscribe;
+      };
+
+      const unsubSeating = fetchSeating();
       await Promise.all([fetchCgpa(), fetchAttendance()]);
+      
+      return unsubSeating;
     };
 
-    fetchData();
+    const cleanup = fetchData();
+    return () => {
+      cleanup.then(unsub => unsub && unsub());
+    };
   }, [user]);
 
   return (
@@ -218,6 +248,51 @@ const Dashboard: React.FC = () => {
             </div>
           </Link>
         )}
+      </section>
+
+      {/* Seating Widget */}
+      <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl group hover:border-accent-purple/30 transition-all">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-purple/10 blur-3xl rounded-full group-hover:bg-accent-purple/20 transition-all"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent-purple/10 flex items-center justify-center text-accent-purple shadow-inner">
+                <MapPin size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">Your Seating</p>
+                <h2 className="text-sm font-bold text-white">{seatingData?.date ? `For ${seatingData.date}` : 'Latest Exam'}</h2>
+              </div>
+            </div>
+            {seatingData?.courseCode && (
+              <div className="px-3 py-1 rounded-full bg-accent-purple/10 border border-accent-purple/20 text-[10px] font-mono font-bold text-accent-purple">
+                {seatingData.courseCode}
+              </div>
+            )}
+          </div>
+          
+          {isLoadingSeating ? (
+             <div className="animate-pulse flex gap-3">
+                <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
+                <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
+             </div>
+          ) : seatingData ? (
+             <div className="grid grid-cols-2 gap-3">
+               <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
+                 <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Hall No</p>
+                 <p className="text-2xl font-black text-white">{seatingData.hallNo}</p>
+               </div>
+               <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
+                 <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Seat No</p>
+                 <p className="text-2xl font-black text-white">{seatingData.seatNo}</p>
+               </div>
+             </div>
+          ) : (
+             <div className="text-sm text-text-secondary p-4 text-center bg-bg-secondary/20 rounded-2xl border border-dashed border-border-color">
+               No seating data found.
+             </div>
+          )}
+        </div>
       </section>
 
       {/* Quick Navigation Cards */}
