@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  UserCheck, 
-  ClipboardList, 
-  PieChart, 
-  Database, 
-  ArrowRight, 
+import {
+  UserCheck,
+  ClipboardList,
+  PieChart,
+  Database,
+  ArrowRight,
   TrendingUp,
   Award,
   ShieldCheck,
@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
-      
+
       const fetchCgpa = async () => {
         try {
           const docRef = doc(db, 'user_logs', user.regNum, 'academic_records', 'current');
@@ -123,7 +123,7 @@ const Dashboard: React.FC = () => {
           const snap = await getDocs(collection(db, 'semester_4'));
           const docs = snap.docs;
           const total = docs.length;
-          
+
           if (total === 0) {
             setAttendanceStatus({ label: 'N/A', color: 'text-text-secondary' });
             return;
@@ -139,7 +139,7 @@ const Dashboard: React.FC = () => {
 
           const present = total - absentCount;
           const percentage = (present / total) * 100;
-          
+
           let label = 'Good';
           let color = 'text-blue-400';
 
@@ -160,7 +160,7 @@ const Dashboard: React.FC = () => {
       const fetchSeating = () => {
         setIsLoadingSeating(true);
         const docRef = doc(db, 'seating_allocations', user.regNum);
-        
+
         // Listen for real-time updates to always fetch the latest seating data
         const unsubscribe = onSnapshot(docRef, (docSnap: DocumentSnapshot) => {
           if (docSnap.exists()) {
@@ -174,13 +174,13 @@ const Dashboard: React.FC = () => {
           console.error("Seating fetch error", error);
           setIsLoadingSeating(false);
         });
-        
+
         return unsubscribe;
       };
 
       const unsubSeating = fetchSeating();
       await Promise.all([fetchCgpa(), fetchAttendance()]);
-      
+
       return unsubSeating;
     };
 
@@ -260,8 +260,11 @@ const Dashboard: React.FC = () => {
                 <MapPin size={20} />
               </div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">Your Seating</p>
-                <h2 className="text-sm font-bold text-white">{seatingData?.date ? `For ${seatingData.date}` : 'Latest Exam'}</h2>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">Your Seating</p>
+                  <span className="px-2 py-[2px] rounded-full bg-accent-purple/20 text-[8px] font-bold text-accent-purple uppercase tracking-widest border border-accent-purple/30 animate-pulse">New</span>
+                </div>
+                <h2 className="text-sm font-bold text-white">{seatingData?.date ? `For ${seatingData.date}` : 'CAT - II'}</h2>
               </div>
             </div>
             {seatingData?.courseCode && (
@@ -270,27 +273,27 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
-          
+
           {isLoadingSeating ? (
-             <div className="animate-pulse flex gap-3">
-                <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
-                <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
-             </div>
+            <div className="animate-pulse flex gap-3">
+              <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
+              <div className="h-16 w-full bg-bg-secondary rounded-2xl"></div>
+            </div>
           ) : seatingData ? (
-             <div className="grid grid-cols-2 gap-3">
-               <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
-                 <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Hall No</p>
-                 <p className="text-2xl font-black text-white">{seatingData.hallNo}</p>
-               </div>
-               <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
-                 <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Seat No</p>
-                 <p className="text-2xl font-black text-white">{seatingData.seatNo}</p>
-               </div>
-             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Hall No</p>
+                <p className="text-2xl font-black text-white">{seatingData.hallNo}</p>
+              </div>
+              <div className="bg-bg-secondary/40 border border-border-color p-4 rounded-2xl flex flex-col items-center justify-center hover:bg-bg-secondary/60 transition-colors">
+                <p className="text-[10px] text-text-secondary uppercase tracking-widest mb-1 font-bold">Seat No</p>
+                <p className="text-2xl font-black text-white">{seatingData.seatNo}</p>
+              </div>
+            </div>
           ) : (
-             <div className="text-sm text-text-secondary p-4 text-center bg-bg-secondary/20 rounded-2xl border border-dashed border-border-color">
-               No seating data found.
-             </div>
+            <div className="text-sm text-text-secondary p-4 text-center bg-bg-secondary/20 rounded-2xl border border-dashed border-border-color">
+              No seating data found.
+            </div>
           )}
         </div>
       </section>
@@ -300,7 +303,7 @@ const Dashboard: React.FC = () => {
         <h2 className="text-sm font-bold uppercase tracking-widest text-text-secondary px-2">Quick Navigation</h2>
         <div className="grid grid-cols-3 gap-3">
           {quickLinks.map((link) => (
-            <Link 
+            <Link
               key={link.path}
               to={link.path}
               className="bg-bg-card border border-border-color p-4 rounded-2xl flex flex-col items-center gap-3 active:scale-95 transition-all shadow-sm hover:border-accent-blue/30"
@@ -322,7 +325,7 @@ const Dashboard: React.FC = () => {
               {isAdmin ? 'Admin Console' : 'Faculty Access'}
             </h2>
           </div>
-          
+
           {isAdmin ? (
             <div className="grid grid-cols-2 gap-4">
               {visibleActions.map((action, idx) => (
@@ -382,7 +385,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <Link to="/exam-timetable" className="p-3 bg-bg-card border border-border-color rounded-2xl text-accent-blue hover:scale-105 transition-transform shadow-md">
-             <ArrowRight size={20} />
+            <ArrowRight size={20} />
           </Link>
         </div>
       </section>
