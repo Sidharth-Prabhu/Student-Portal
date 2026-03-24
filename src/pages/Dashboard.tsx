@@ -16,7 +16,8 @@ import {
   Clock,
   Calculator,
   Calendar,
-  MapPin
+  MapPin,
+  Search
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs, onSnapshot, DocumentSnapshot, FirestoreError } from 'firebase/firestore';
@@ -85,6 +86,36 @@ const Dashboard: React.FC = () => {
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
   const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
   const [isLoadingSeating, setIsLoadingSeating] = useState(true);
+
+  const [seatingSearchReg, setSeatingSearchReg] = useState('');
+  const [activeSeatingReg, setActiveSeatingReg] = useState('');
+
+  useEffect(() => {
+    if (user?.regNum && !activeSeatingReg) {
+      setActiveSeatingReg(user.regNum);
+    }
+  }, [user, activeSeatingReg]);
+
+  useEffect(() => {
+    if (!activeSeatingReg) return;
+    
+    setIsLoadingSeating(true);
+    const docRef = doc(db, 'seating_allocations', activeSeatingReg);
+    
+    const unsubscribe = onSnapshot(docRef, (docSnap: DocumentSnapshot) => {
+      if (docSnap.exists()) {
+        setSeatingData(docSnap.data() as any);
+      } else {
+        setSeatingData(null);
+      }
+      setIsLoadingSeating(false);
+    }, (error: FirestoreError) => {
+      console.error("Seating fetch error", error);
+      setIsLoadingSeating(false);
+    });
+
+    return () => unsubscribe();
+  }, [activeSeatingReg]);
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -157,37 +188,10 @@ const Dashboard: React.FC = () => {
         }
       };
 
-      const fetchSeating = () => {
-        setIsLoadingSeating(true);
-        const docRef = doc(db, 'seating_allocations', user.regNum);
-
-        // Listen for real-time updates to always fetch the latest seating data
-        const unsubscribe = onSnapshot(docRef, (docSnap: DocumentSnapshot) => {
-          if (docSnap.exists()) {
-            setSeatingData(docSnap.data() as any);
-            console.log("Fetched latest seating data:", docSnap.data());
-          } else {
-            setSeatingData(null);
-          }
-          setIsLoadingSeating(false);
-        }, (error: FirestoreError) => {
-          console.error("Seating fetch error", error);
-          setIsLoadingSeating(false);
-        });
-
-        return unsubscribe;
-      };
-
-      const unsubSeating = fetchSeating();
       await Promise.all([fetchCgpa(), fetchAttendance()]);
-
-      return unsubSeating;
     };
 
-    const cleanup = fetchData();
-    return () => {
-      cleanup.then(unsub => unsub && unsub());
-    };
+    fetchData();
   }, [user]);
 
   return (
@@ -275,7 +279,9 @@ const Dashboard: React.FC = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
-                  <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">Your Seating</p>
+                  <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">
+                    {activeSeatingReg && activeSeatingReg !== user?.regNum ? `Seating for ${activeSeatingReg}` : 'Your Seating'}
+                  </p>
                   <span className="px-2 py-[2px] rounded-full bg-accent-purple/20 text-[8px] font-bold text-accent-purple uppercase tracking-widest border border-accent-purple/30 animate-pulse">New</span>
                 </div>
                 <h2 className="text-sm font-bold text-white">{seatingData?.date ? `For ${seatingData.date}` : 'CAT - II'}</h2>
@@ -287,6 +293,41 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
+
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (seatingSearchReg.trim()) {
+                setActiveSeatingReg(seatingSearchReg.trim());
+              } else {
+                setActiveSeatingReg(user?.regNum || '');
+              }
+            }} 
+            className="mb-4 flex gap-2 relative z-20"
+          >
+            <input 
+              type="text" 
+              placeholder="Search Reg No..." 
+              value={seatingSearchReg}
+              onChange={(e) => setSeatingSearchReg(e.target.value)}
+              className="flex-grow bg-bg-secondary/80 border border-border-color rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-accent-purple/50 transition-colors placeholder:text-text-secondary/50"
+            />
+            <button type="submit" className="px-3 py-2 bg-accent-purple/10 text-accent-purple rounded-xl hover:bg-accent-purple/20 transition-colors flex items-center justify-center">
+              <Search size={16} />
+            </button>
+            {activeSeatingReg && activeSeatingReg !== user?.regNum && (
+              <button 
+                type="button" 
+                onClick={() => {
+                  setSeatingSearchReg('');
+                  setActiveSeatingReg(user?.regNum || '');
+                }} 
+                className="text-[10px] font-bold uppercase text-text-secondary hover:text-accent-purple transition-colors px-2"
+              >
+                Reset
+              </button>
+            )}
+          </form>
 
           {isLoadingSeating ? (
             <div className="animate-pulse flex gap-3">
