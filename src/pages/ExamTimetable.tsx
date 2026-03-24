@@ -1,97 +1,130 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon, Clock, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 
 const examSchedule = [
-  { date: "2025-03-12", subject: "Tamils and Technology", displayDate: "12 March 2025" },
-  { date: "2025-03-13", subject: "Engineering Chemistry", displayDate: "13 March 2025" },
-  { date: "2025-03-14", subject: "Professional English", displayDate: "14 March 2025" },
-  { date: "2025-03-17", subject: "Python for Data Science", displayDate: "17 March 2025" },
-  { date: "2025-03-18", subject: "Statistics and Numerical Methods", displayDate: "18 March 2025" },
-  { date: "2025-03-19", subject: "Engineering Graphics", displayDate: "19 March 2025" },
-  { date: "2025-03-20", subject: "Data Structures Design", displayDate: "20 March 2025" }
+  { date: '21-May-26', session: 'F.N.', courseCode: 'AD23411', courseName: 'Data Analytics' },
+  { date: '25-May-26', session: 'A.N.', courseCode: 'GE23411', courseName: 'Environmental Science and Sustainability' },
+  { date: '29-May-26', session: 'F.N.', courseCode: 'AL23411', courseName: 'Machine Learning' },
+  { date: '30-May-26', session: 'F.N.', courseCode: 'CS23431', courseName: 'Design and Analysis of Algorithms' },
+  { date: '02-Jun-26', session: 'F.N.', courseCode: 'MA23411', courseName: 'Probability and Statistics' },
+  { date: '04-Jun-26', session: 'A.N.', courseCode: 'CS23412', courseName: 'Operating Systems' },
 ];
 
 const ExamTimetable: React.FC = () => {
-  const [currentDate] = useState(new Date('2025-03-10')); // Using the same mock date from original
+  const navigate = useNavigate();
+
+  // Helper to parse dates like "21-May-26"
+  const parseDateStr = (dateStr: string) => {
+    // 21-May-26 -> 2026-05-21
+    const parts = dateStr.split('-');
+    const months: Record<string, string> = {
+      'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+      'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    };
+    return new Date(`20${parts[2]}-${months[parts[1]]}-${parts[0]}T00:00:00`);
+  };
+
+  const getDaysRemaining = (examDateStr: string) => {
+    // Treat "today" as fixed for this example if needed, or dynamic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const examDate = parseDateStr(examDateStr);
+
+    // time difference
+    const diffTime = examDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <section className="bg-bg-card border border-border-color rounded-3xl p-8 text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-accent-purple/5 rounded-full -translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
-        <div className="relative z-10">
-          <div className="w-20 h-20 bg-accent-purple/10 rounded-2xl flex items-center justify-center text-accent-purple mx-auto mb-6">
-            <Calendar size={40} />
-          </div>
-          <h1 className="text-3xl font-bold gradient-text">Exam Timetable</h1>
-          <p className="text-text-secondary mt-2">AI & DS - Section E • Upcoming Assessments</p>
-        </div>
-      </section>
-
-      <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-bg-secondary/50 text-left">
-                <th className="py-5 px-8 text-xs font-bold text-text-secondary uppercase tracking-wider border-b border-border-color">Status</th>
-                <th className="py-5 px-8 text-xs font-bold text-text-secondary uppercase tracking-wider border-b border-border-color">Date</th>
-                <th className="py-5 px-8 text-xs font-bold text-text-secondary uppercase tracking-wider border-b border-border-color">Subject</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-color">
-              {examSchedule.map((exam, idx) => {
-                const isCompleted = new Date(exam.date) < currentDate;
-                const isToday = new Date(exam.date).toDateString() === currentDate.toDateString();
-                
-                return (
-                  <motion.tr 
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    key={exam.date} 
-                    className={clsx(
-                      "group transition-colors",
-                      isCompleted ? "opacity-40 grayscale" : "hover:bg-accent-purple/5",
-                      isToday && "bg-accent-purple/10"
-                    )}
-                  >
-                    <td className="py-6 px-8">
-                      {isCompleted ? (
-                        <CheckCircle2 size={20} className="text-emerald-400" />
-                      ) : isToday ? (
-                        <div className="flex items-center gap-2 text-accent-purple">
-                          <Clock size={20} className="animate-pulse" />
-                          <span className="text-xs font-bold uppercase tracking-tighter">Today</span>
-                        </div>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border-2 border-border-color"></div>
-                      )}
-                    </td>
-                    <td className="py-6 px-8">
-                      <span className={clsx("font-semibold block", isCompleted && "line-through")}>
-                        {exam.displayDate}
-                      </span>
-                    </td>
-                    <td className="py-6 px-8">
-                      <span className={clsx("font-bold text-lg", isCompleted && "line-through", !isCompleted && "text-text-primary")}>
-                        {exam.subject}
-                      </span>
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+    <div className="space-y-6 max-w-lg mx-auto pb-8">
+      <div className="flex items-center gap-4">
+        <button onClick={() => navigate(-1)} className="p-2 bg-bg-card border border-border-color rounded-xl hover:bg-bg-secondary transition-colors">
+          <ChevronLeft size={20} />
+        </button>
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <CalendarIcon className="text-accent-blue" />
+          End Semester Exams
+        </h1>
       </div>
 
-      <div className="bg-bg-secondary/50 border border-border-color rounded-2xl p-6 flex items-start gap-4">
-        <AlertCircle className="text-accent-purple shrink-0 mt-1" size={20} />
-        <p className="text-xs text-text-secondary leading-relaxed">
-          Please arrive at the examination hall at least 30 minutes before the scheduled time. 
-          Bring your hall ticket and required stationery. Good luck with your exams!
-        </p>
+      <section className="bg-bg-card border border-border-color rounded-3xl p-6 shadow-xl relative overflow-hidden text-center mb-6">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-blue/10 blur-3xl rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        <p className="text-xs uppercase font-bold tracking-widest text-text-secondary mb-1">Semester 4 • AI & DS</p>
+        <h2 className="text-2xl font-black text-white">April - May 2026</h2>
+      </section>
+
+      <div className="space-y-4">
+        {examSchedule.map((exam, index) => {
+          const daysRemaining = getDaysRemaining(exam.date);
+          const isPast = daysRemaining < 0;
+          const isNext = daysRemaining >= 0 && daysRemaining <= 7; // Next 7 days
+
+          return (
+            <motion.div
+              key={exam.courseCode}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={clsx(
+                "p-5 rounded-3xl border shadow-lg relative overflow-hidden transition-all",
+                isPast
+                  ? "bg-bg-secondary/30 border-border-color/50 opacity-60 grayscale-[50%]"
+                  : isNext
+                    ? "bg-bg-card border-accent-blue/30 shadow-accent-blue/5"
+                    : "bg-bg-card border-border-color"
+              )}
+            >
+              {isNext && (
+                <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/5 blur-2xl rounded-full"></div>
+              )}
+
+              <div className="flex items-start justify-between relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className={clsx(
+                    "w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold shadow-inner",
+                    isPast ? "bg-bg-secondary text-text-secondary" : "bg-accent-blue/10 text-accent-blue"
+                  )}>
+                    <span className="text-[10px] uppercase">{exam.date.split('-')[1]}</span>
+                    <span className="text-lg leading-tight">{exam.date.split('-')[0]}</span>
+                  </div>
+                  <div>
+                    <h3 className={clsx("font-bold text-sm", isPast ? "text-text-secondary" : "text-white")}>
+                      {exam.courseName}
+                    </h3>
+                    <p className="text-[10px] font-mono text-text-secondary mt-0.5">{exam.courseCode}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1">
+                  <div className={clsx(
+                    "px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1",
+                    exam.session === 'F.N.'
+                      ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                      : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                  )}>
+                    <Clock size={10} />
+                    {exam.session}
+                  </div>
+                  {!isPast && (
+                    <span className="text-[9px] text-text-secondary font-bold">
+                      {daysRemaining === 0 ? 'TODAY' : `in ${daysRemaining} days`}
+                    </span>
+                  )}
+                  {isPast && (
+                    <span className="text-[9px] text-green-500/70 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={10} /> DONE
+                    </span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

@@ -248,7 +248,21 @@ const Dashboard: React.FC = () => {
             </div>
           </Link>
         )}
+
+        <Link to="/exam-timetable" className="bg-bg-card border border-border-color p-4 rounded-2xl flex flex-col gap-2 shadow-sm active:scale-95 transition-transform block text-left">
+          <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center text-accent-blue">
+            <Calendar size={18} />
+          </div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Schedule</p>
+            <p className="font-bold text-white text-xl">
+              End Semester
+            </p>
+          </div>
+        </Link>
       </section>
+
+
 
       {/* Seating Widget */}
       <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl group hover:border-accent-purple/30 transition-all">
@@ -371,24 +385,6 @@ const Dashboard: React.FC = () => {
           )}
         </section>
       )}
-
-      {/* Navigation Shortcuts */}
-      <section className="bg-bg-secondary/20 p-6 rounded-3xl border border-border-color/30 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-bg-card border border-border-color flex items-center justify-center text-text-secondary">
-            <ArrowRight size={20} />
-          </div>
-          <div>
-            <p className="text-sm font-bold">Additional Resources</p>
-            <p className="text-[10px] text-text-secondary">Exam Schedule & other tools</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link to="/exam-timetable" className="p-3 bg-bg-card border border-border-color rounded-2xl text-accent-blue hover:scale-105 transition-transform shadow-md">
-            <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
     </div>
   );
 };

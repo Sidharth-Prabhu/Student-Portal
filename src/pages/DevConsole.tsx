@@ -12,8 +12,9 @@ import {
   Search
 } from 'lucide-react';
 import { db, secondaryAuth } from '../lib/firebase';
-import { collection, getDocs, orderBy, query, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
@@ -33,6 +34,8 @@ const DevConsole: React.FC = () => {
   const [todayVisits, setTodayVisits] = useState(0);
   const [activeTab, setActiveTab] = useState<'analytics' | 'add_admin'>('analytics');
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isDeletingSeating, setIsDeletingSeating] = useState(false);
 
   // New Admin Form State
   const [password, setPassword] = useState('');
@@ -296,6 +299,45 @@ const DevConsole: React.FC = () => {
             </form>
           </section>
         </motion.div>
+      )}
+
+      {user?.regNum === '2117240070308' && (
+        <motion.section 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-red-500/10 border border-red-500/30 rounded-3xl p-6 mt-6 shadow-xl space-y-4"
+        >
+          <div className="flex items-center gap-3 text-red-500 font-bold">
+            <AlertCircle size={24} />
+            <h2 className="text-lg">Super Admin Tools</h2>
+          </div>
+          <p className="text-xs text-text-secondary">Danger Zone: Operations here cannot be undone.</p>
+          <button
+            onClick={async () => {
+              if (!window.confirm("Are you sure you want to delete ALL seating allocations?")) return;
+              setIsDeletingSeating(true);
+              try {
+                const snap = await getDocs(collection(db, 'seating_allocations'));
+                const batch = writeBatch(db);
+                snap.docs.forEach((d) => {
+                  batch.delete(doc(db, 'seating_allocations', d.id));
+                });
+                await batch.commit();
+                alert("Seating allocations deleted successfully.");
+              } catch (e) {
+                console.error(e);
+                alert("Failed to delete.");
+              } finally {
+                setIsDeletingSeating(false);
+              }
+            }}
+            disabled={isDeletingSeating}
+            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+          >
+            {isDeletingSeating ? <Loader2 className="animate-spin" size={18} /> : <AlertCircle size={18} />}
+            {isDeletingSeating ? 'Deleting...' : 'Delete Seating Allocations'}
+          </button>
+        </motion.section>
       )}
     </div>
   );
