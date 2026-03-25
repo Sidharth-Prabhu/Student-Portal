@@ -6,11 +6,11 @@ import { clsx } from 'clsx';
 
 const examSchedule = [
   { date: '21-May-26', session: 'F.N.', courseCode: 'AD23411', courseName: 'Data Analytics' },
+  { date: '23-May-26', session: 'F.N.', courseCode: 'CS23415', courseName: 'Operating Systems' },
   { date: '25-May-26', session: 'A.N.', courseCode: 'GE23411', courseName: 'Environmental Science and Sustainability' },
   { date: '29-May-26', session: 'F.N.', courseCode: 'AL23411', courseName: 'Machine Learning' },
   { date: '30-May-26', session: 'F.N.', courseCode: 'CS23431', courseName: 'Design and Analysis of Algorithms' },
   { date: '02-Jun-26', session: 'F.N.', courseCode: 'MA23411', courseName: 'Probability and Statistics' },
-  { date: '04-Jun-26', session: 'A.N.', courseCode: 'CS23412', courseName: 'Operating Systems' },
 ];
 
 const ExamTimetable: React.FC = () => {
