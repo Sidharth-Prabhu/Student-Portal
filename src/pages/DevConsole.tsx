@@ -12,9 +12,9 @@ import {
   Search
 } from 'lucide-react';
 import { db, secondaryAuth } from '../lib/firebase';
-import { collection, getDocs, orderBy, query, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, doc, setDoc /*, writeBatch */ } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
@@ -34,8 +34,8 @@ const DevConsole: React.FC = () => {
   const [todayVisits, setTodayVisits] = useState(0);
   const [activeTab, setActiveTab] = useState<'analytics' | 'add_admin'>('analytics');
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isDeletingSeating, setIsDeletingSeating] = useState(false);
+  // const { user } = useAuth();
+  // const [isDeletingSeating, setIsDeletingSeating] = useState(false);
 
   // New Admin Form State
   const [password, setPassword] = useState('');
@@ -301,6 +301,7 @@ const DevConsole: React.FC = () => {
         </motion.div>
       )}
 
+      {/* Super Admin Tools - Commented out Seating Deletion
       {user?.regNum === '2117240070308' && (
         <motion.section 
           initial={{ opacity: 0, scale: 0.95 }}
@@ -339,6 +340,7 @@ const DevConsole: React.FC = () => {
           </button>
         </motion.section>
       )}
+      */}
     </div>
   );
 };

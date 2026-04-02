@@ -16,11 +16,11 @@ import {
   Clock,
   Calculator,
   Calendar,
-  MapPin,
-  Search
+  // MapPin,
+  // Search
 } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { doc, getDoc, collection, getDocs, onSnapshot, DocumentSnapshot, FirestoreError } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs /*, onSnapshot, DocumentSnapshot, FirestoreError */ } from 'firebase/firestore';
 import { clsx } from 'clsx';
 
 const adminActions = [
@@ -84,12 +84,13 @@ const Dashboard: React.FC = () => {
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
   const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
-  const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
-  const [isLoadingSeating, setIsLoadingSeating] = useState(true);
+  // const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
+  // const [isLoadingSeating, setIsLoadingSeating] = useState(true);
 
-  const [seatingSearchReg, setSeatingSearchReg] = useState('');
-  const [activeSeatingReg, setActiveSeatingReg] = useState('');
+  // const [seatingSearchReg, setSeatingSearchReg] = useState('');
+  // const [activeSeatingReg, setActiveSeatingReg] = useState('');
 
+  /*
   useEffect(() => {
     if (user?.regNum && !activeSeatingReg) {
       setActiveSeatingReg(user.regNum);
@@ -116,6 +117,7 @@ const Dashboard: React.FC = () => {
 
     return () => unsubscribe();
   }, [activeSeatingReg]);
+  */
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -268,7 +270,7 @@ const Dashboard: React.FC = () => {
 
 
 
-      {/* Seating Widget */}
+      {/* Seating Widget - Commented out for now
       <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl group hover:border-accent-purple/30 transition-all">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-purple/10 blur-3xl rounded-full group-hover:bg-accent-purple/20 transition-all"></div>
         <div className="relative z-10">
@@ -352,6 +354,7 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
+      */}
 
       {/* Quick Navigation Cards */}
       <section className="space-y-4">
