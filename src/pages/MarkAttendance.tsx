@@ -4,14 +4,12 @@ import {
   Check, 
   Loader2,
   Search,
-  ChevronLeft,
-  ChevronRight,
   ShieldCheck,
   Briefcase,
   Calendar as CalendarIcon
 } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
 
@@ -101,7 +99,6 @@ const MarkAttendance: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchAttendance = useCallback(async () => {
@@ -141,9 +138,6 @@ const MarkAttendance: React.FC = () => {
     console.log("OD marking disabled", regNum, info);
   };
 
-  const handleSubmit = async () => {
-    alert("Attendance marking is currently disabled. Changes cannot be saved.");
-  };
 
   const stats = useMemo(() => ({
     present: Object.values(attendance).filter(s => s === 'present').length,

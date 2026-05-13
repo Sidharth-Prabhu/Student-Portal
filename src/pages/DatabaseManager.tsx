@@ -3,13 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Database, 
   Plus, 
-  Edit2, 
   Trash2, 
   X,
   Loader2,
   ChevronRight,
   ChevronDown,
-  Save,
   Type,
   List as ListIcon,
   Layers,
@@ -24,10 +22,7 @@ import { db } from '../lib/firebase';
 import { 
   collection, 
   getDocs, 
-  query, 
-  doc, 
-  deleteDoc, 
-  setDoc
+  query
 } from 'firebase/firestore';
 import { clsx } from 'clsx';
 
@@ -149,9 +144,7 @@ const DatabaseManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDoc, setEditingDoc] = useState<AttendanceData | null>(null);
   const [editBuffer, setEditDocBuffer] = useState<AttendanceData | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const fetchDocs = useCallback(async () => {
@@ -216,17 +209,11 @@ const DatabaseManager: React.FC = () => {
     });
   };
 
-  const handleSaveChanges = async () => {
-    alert("Database is in read-only mode. Changes cannot be saved.");
-  };
 
-  const handleDeleteDoc = async (id: string) => {
+  const handleDeleteDoc = async (_id: string) => {
     alert("Database is in read-only mode. Deletion is disabled.");
   };
 
-  const handleCreateNewDoc = async () => {
-    alert("Database is in read-only mode. New records cannot be created.");
-  };
 
   const filteredDocs = documents.filter(d => 
     d.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -320,7 +307,6 @@ const DatabaseManager: React.FC = () => {
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
                   <button
                     onClick={() => {
-                      setEditingDoc(d);
                       setEditDocBuffer(JSON.parse(JSON.stringify(d)));
                       setIsModalOpen(true);
                     }}
