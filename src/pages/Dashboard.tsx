@@ -25,8 +25,8 @@ import { clsx } from 'clsx';
 
 const adminActions = [
   {
-    title: 'Mark Attendance',
-    desc: 'Daily roll call',
+    title: 'Attendance Records',
+    desc: 'View & verify logs',
     icon: UserCheck,
     path: '/mark-attendance',
     iconColor: 'text-blue-400'
@@ -46,7 +46,7 @@ const adminActions = [
     iconColor: 'text-purple-400'
   },
   {
-    title: 'Database Manager',
+    title: 'Database Viewer',
     desc: 'Collections & Records',
     icon: Database,
     path: '/database-manager',
@@ -84,12 +84,13 @@ const Dashboard: React.FC = () => {
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
   const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
-  const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
-  const [isLoadingSeating, setIsLoadingSeating] = useState(true);
+  // const [seatingData, setSeatingData] = useState<{ date: string; hallNo: string; seatNo: string; courseCode: string } | null>(null);
+  // const [isLoadingSeating, setIsLoadingSeating] = useState(true);
 
-  const [seatingSearchReg, setSeatingSearchReg] = useState('');
-  const [activeSeatingReg, setActiveSeatingReg] = useState('');
+  // const [seatingSearchReg, setSeatingSearchReg] = useState('');
+  // const [activeSeatingReg, setActiveSeatingReg] = useState('');
 
+  /*
   useEffect(() => {
     if (user?.regNum && !activeSeatingReg) {
       setActiveSeatingReg(user.regNum);
@@ -116,6 +117,7 @@ const Dashboard: React.FC = () => {
 
     return () => unsubscribe();
   }, [activeSeatingReg]);
+  */
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -268,7 +270,7 @@ const Dashboard: React.FC = () => {
 
 
 
-      {/* Seating Widget */}
+      {/* Seating Widget 
       <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl group hover:border-accent-purple/30 transition-all">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-purple/10 blur-3xl rounded-full group-hover:bg-accent-purple/20 transition-all"></div>
         <div className="relative z-10">
@@ -350,6 +352,47 @@ const Dashboard: React.FC = () => {
               No seating data found.
             </div>
           )}
+        </div>
+      </section>
+      {/* Semester Exam Seating - Coming Soon */}
+      <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl opacity-60 grayscale-[0.5]">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center text-text-secondary shadow-inner">
+                <MapPin size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest font-mono">Semester Seating</p>
+                  <span className="px-2 py-[2px] rounded-full bg-bg-secondary border border-border-color text-[8px] font-bold text-text-secondary uppercase tracking-widest">Coming Soon</span>
+                </div>
+                <h2 className="text-sm font-bold text-white">End Semester Exams</h2>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mb-4">
+            <div className="flex-grow bg-bg-secondary/40 border border-border-color rounded-xl px-3 py-2 text-xs text-text-secondary/50 flex items-center gap-2">
+              <Search size={14} />
+              Search Reg No...
+            </div>
+            <div className="px-3 py-2 bg-bg-secondary/40 text-text-secondary/50 rounded-xl border border-border-color flex items-center justify-center">
+              <Search size={16} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-bg-secondary/20 border border-border-color/50 p-4 rounded-2xl flex flex-col items-center justify-center">
+              <p className="text-[10px] text-text-secondary/50 uppercase tracking-widest mb-1 font-bold">Hall No</p>
+              <p className="text-2xl font-black text-text-secondary/30">--</p>
+            </div>
+            <div className="bg-bg-secondary/20 border border-border-color/50 p-4 rounded-2xl flex flex-col items-center justify-center">
+              <p className="text-[10px] text-text-secondary/50 uppercase tracking-widest mb-1 font-bold">Seat No</p>
+              <p className="text-2xl font-black text-text-secondary/30">--</p>
+            </div>
+          </div>
         </div>
       </section>
 

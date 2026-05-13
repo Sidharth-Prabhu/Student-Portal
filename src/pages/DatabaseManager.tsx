@@ -50,28 +50,11 @@ const JSONTreeNode: React.FC<{
   const isArray = Array.isArray(value);
 
   const handleAddValue = () => {
-    const type = prompt("Enter type (string, number, array, object):", "string");
-    if (!type) return;
-    
-    let defaultValue: unknown = "";
-    if (type === "number") defaultValue = 0;
-    else if (type === "array") defaultValue = [];
-    else if (type === "object") defaultValue = {};
-
-    if (isArray) {
-      onUpdate([...path, (value as unknown[]).length.toString()], defaultValue);
-    } else {
-      const key = prompt("Enter field name:");
-      if (key) onUpdate([...path, key], defaultValue);
-    }
+    alert("Database is in read-only mode.");
   };
 
   const handleRenameKey = () => {
-    if (isArray || path.length === 0) return;
-    const newKey = prompt("Enter new name for this field:", label);
-    if (newKey && newKey !== label && onRename) {
-      onRename(path.slice(0, -1), label, newKey);
-    }
+    alert("Database is in read-only mode.");
   };
 
   const renderValue = () => {
@@ -104,14 +87,14 @@ const JSONTreeNode: React.FC<{
       <div className="flex items-center gap-2 mt-1">
         <input 
           type="text"
-          className="bg-bg-secondary border border-border-color rounded-xl px-3 py-2.5 text-sm w-full focus:border-accent-blue outline-none text-white min-h-[44px]"
+          className="bg-bg-secondary/50 border border-border-color rounded-xl px-3 py-2.5 text-sm w-full outline-none text-text-secondary min-h-[44px]"
           value={String(value ?? '')}
-          onChange={(e) => onUpdate(path, e.target.value)}
+          readOnly
           inputMode="text"
         />
         <button 
-          onClick={() => onDelete(path)} 
-          className="text-red-400 hover:text-red-500 p-2 active:bg-red-500/10 rounded-xl transition-colors shrink-0"
+          onClick={() => alert("Database is in read-only mode.")} 
+          className="text-text-secondary/30 p-2 rounded-xl transition-colors shrink-0"
         >
           <Trash2 size={18} />
         </button>
@@ -234,44 +217,15 @@ const DatabaseManager: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
-    if (!editingDoc || !editBuffer) return;
-    setIsSaving(true);
-    try {
-      const { id, ...dataToSave } = editBuffer;
-      await setDoc(doc(db, activeCollection, id), dataToSave);
-      setDocuments(documents.map(d => d.id === id ? editBuffer : d));
-      setIsModalOpen(false);
-      alert("Cloud updated successfully.");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to sync changes.");
-    } finally {
-      setIsSaving(false);
-    }
+    alert("Database is in read-only mode. Changes cannot be saved.");
   };
 
   const handleDeleteDoc = async (id: string) => {
-    if (!confirm(`Permanently destroy document "${id}"?`)) return;
-    try {
-      await deleteDoc(doc(db, activeCollection, id));
-      setDocuments(documents.filter(d => d.id !== id));
-    } catch (e) {
-      console.error(e);
-    }
+    alert("Database is in read-only mode. Deletion is disabled.");
   };
 
   const handleCreateNewDoc = async () => {
-    const id = prompt("Enter unique Document ID:");
-    if (!id) return;
-    if (documents.find(d => d.id === id)) {
-      alert("Document already exists!");
-      return;
-    }
-    const initialData: AttendanceData = { id };
-    setDocuments([initialData, ...documents]);
-    setEditingDoc(initialData);
-    setEditDocBuffer(initialData);
-    setIsModalOpen(true);
+    alert("Database is in read-only mode. New records cannot be created.");
   };
 
   const filteredDocs = documents.filter(d => 
@@ -294,12 +248,9 @@ const DatabaseManager: React.FC = () => {
               <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Global Document Manager</p>
             </div>
           </div>
-          <button 
-            onClick={handleCreateNewDoc}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/20 active:scale-95 transition-transform shrink-0"
-          >
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-bg-secondary text-text-secondary flex items-center justify-center border border-border-color shrink-0 opacity-50">
             <Plus size={20} />
-          </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -366,7 +317,7 @@ const DatabaseManager: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
                   <button
                     onClick={() => {
                       setEditingDoc(d);
@@ -375,11 +326,11 @@ const DatabaseManager: React.FC = () => {
                     }}
                     className="p-3 bg-bg-secondary hover:bg-orange-500/10 text-text-secondary hover:text-orange-400 rounded-xl transition-colors"
                   >
-                    <Edit2 size={18} />
+                    <Search size={18} />
                   </button>
                   <button
                     onClick={() => handleDeleteDoc(d.id)}
-                    className="p-3 bg-bg-secondary hover:bg-red-500/10 text-text-secondary hover:text-red-400 rounded-xl transition-colors"
+                    className="p-3 bg-bg-secondary text-text-secondary/20 rounded-xl transition-colors cursor-not-allowed"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -414,11 +365,11 @@ const DatabaseManager: React.FC = () => {
               <div className="p-6 sm:p-8 border-b border-border-color flex items-center justify-between bg-bg-secondary/30">
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-400 shrink-0">
-                    <Edit2 size={20} />
+                    <Search size={20} />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-lg sm:text-xl font-black truncate">Node Tree Editor</h2>
-                    <p className="text-[10px] text-text-secondary font-mono font-bold uppercase truncate">{activeCollection} / {editBuffer?.id}</p>
+                    <h2 className="text-lg sm:text-xl font-black truncate">Document Viewer</h2>
+                    <p className="text-[10px] text-text-secondary font-mono font-bold uppercase truncate">READ ONLY MODE</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -468,15 +419,7 @@ const DatabaseManager: React.FC = () => {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-grow py-4 rounded-2xl font-bold text-sm text-text-secondary bg-bg-secondary active:scale-[0.98] transition-all min-h-[50px]"
                 >
-                  Discard Changes
-                </button>
-                <button
-                  onClick={handleSaveChanges}
-                  disabled={isSaving}
-                  className="flex-grow py-4 rounded-2xl font-bold text-sm text-white bg-orange-500 shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 min-h-[50px]"
-                >
-                  {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                  Commit to Cloud
+                  Close Viewer
                 </button>
               </div>
             </motion.div>
