@@ -31,25 +31,7 @@ const ViewAttendance: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const fallbackCopy = (text: string) => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.top = '0';
-    textArea.style.left = '0';
-    textArea.style.position = 'fixed';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Fallback copy failed', err);
-    }
-    document.body.removeChild(textArea);
-  };
+
 
   const fetchInitialDates = useCallback(async () => {
     try {
@@ -120,7 +102,7 @@ const ViewAttendance: React.FC = () => {
     );
   };
 
-  const exportCSV = () => {
+  const exportCSV = async () => {
     const summary = getSummary();
     const headers = ["Reg Number", "Name", "Total Days", "Present", "Absent", "I-OD", "E-OD", "Percentage"];
     const rows = summary.map(s => [
@@ -135,27 +117,39 @@ const ViewAttendance: React.FC = () => {
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const fileName = `attendance_summary_${fromDate}_to_${toDate}.csv`;
+    const file = new File([blob], fileName, { type: 'text/csv' });
 
-    const openWhatsApp = () => {
-      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(csvContent)}`;
-      const newWindow = window.open(whatsappUrl, '_blank');
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        window.location.href = whatsappUrl;
-      }
+    const downloadFallback = () => {
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", fileName);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      alert("Native file sharing is not supported on this browser. The CSV file has been downloaded instead so you can send it manually.");
     };
 
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(csvContent).then(() => {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Attendance Summary',
+          text: `Attendance Summary CSV file from ${fromDate} to ${toDate}`
+        });
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-        openWhatsApp();
-      }).catch(() => {
-        fallbackCopy(csvContent);
-        openWhatsApp();
-      });
+      } catch (err) {
+        console.error('Share failed', err);
+        if (err instanceof Error && err.name !== 'AbortError') {
+          downloadFallback();
+        }
+      }
     } else {
-      fallbackCopy(csvContent);
-      openWhatsApp();
+      downloadFallback();
     }
   };
 
