@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Home, Calendar, Calculator, Clock, User, Bell } from 'lucide-react';
+import { LogOut, Home, Calendar, Calculator, Clock, User, Bell, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import InstallPWA from './InstallPWA';
-import DownloadAPK from './DownloadAPK';
+import DownloadAPK, { isChromeOrSafariAndNotWebView, triggerAPKDownload } from './DownloadAPK';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,6 +16,16 @@ const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showDownloadBtn, setShowDownloadBtn] = useState(false);
+  const [isDownloadingApk, setIsDownloadingApk] = useState(false);
+
+  useEffect(() => {
+    setShowDownloadBtn(isChromeOrSafariAndNotWebView());
+  }, []);
+
+  const handleApkDownload = () => {
+    triggerAPKDownload(setIsDownloadingApk);
+  };
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to sign out?')) {
@@ -53,6 +63,20 @@ const Layout: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {showDownloadBtn && (
+              <button 
+                onClick={handleApkDownload}
+                disabled={isDownloadingApk}
+                className="p-2 text-text-secondary hover:text-emerald-400 transition-colors relative flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                title="Download Android App"
+              >
+                {isDownloadingApk ? (
+                  <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                ) : (
+                  <Download size={20} />
+                )}
+              </button>
+            )}
             <button className="p-2 text-text-secondary hover:text-text-primary transition-colors relative">
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-bg-primary"></span>

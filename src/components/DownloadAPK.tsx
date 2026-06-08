@@ -50,6 +50,52 @@ interface DownloadAPKProps {
   isLoggedIn?: boolean;
 }
 
+export const triggerAPKDownload = async (
+  setIsDownloading?: (loading: boolean) => void,
+  setShowErrorAlert?: (error: boolean) => void
+) => {
+  if (setIsDownloading) setIsDownloading(true);
+  if (setShowErrorAlert) setShowErrorAlert(false);
+
+  const fallbackUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/download/V1.0/app-release.apk';
+  const latestRedirectUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/latest/download/app-release.apk';
+
+  try {
+    // 1. Attempt to fetch latest release from GitHub API
+    const response = await fetch('https://api.github.com/repos/Sidharth-Prabhu/Student-Portal/releases/latest', {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const apkAsset = data.assets?.find((asset: any) => asset.name.endsWith('.apk'));
+
+      if (apkAsset && apkAsset.browser_download_url) {
+        window.location.href = apkAsset.browser_download_url;
+        if (setIsDownloading) setIsDownloading(false);
+        return;
+      }
+    }
+
+    // 2. If API fails (e.g., private repo, rate limits), try the direct GitHub releases redirect
+    console.warn('GitHub API not accessible or no APK asset found. Redirecting to latest release download path...');
+    window.location.href = latestRedirectUrl;
+
+  } catch (error) {
+    console.error('Error fetching latest release metadata:', error);
+    // 3. Absolute fallback to hardcoded V1.0 APK
+    window.location.href = fallbackUrl;
+    if (setShowErrorAlert) setShowErrorAlert(true);
+  } finally {
+    // Keep loading spinner briefly to give visual feedback before redirect complete
+    if (setIsDownloading) {
+      setTimeout(() => setIsDownloading(false), 1500);
+    }
+  }
+};
+
 const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
   const [showBanner, setShowBanner] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -73,47 +119,8 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
     window.dispatchEvent(new Event('download-apk-dismissed-event'));
   };
 
-  const handleDownload = async () => {
-    if (isDownloading) return;
-    setIsDownloading(true);
-    setShowErrorAlert(false);
-
-    const fallbackUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/download/V1.0/app-release.apk';
-    const latestRedirectUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/latest/download/app-release.apk';
-
-    try {
-      // 1. Attempt to fetch latest release from GitHub API
-      const response = await fetch('https://api.github.com/repos/Sidharth-Prabhu/Student-Portal/releases/latest', {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const apkAsset = data.assets?.find((asset: any) => asset.name.endsWith('.apk'));
-
-        if (apkAsset && apkAsset.browser_download_url) {
-          window.location.href = apkAsset.browser_download_url;
-          setIsDownloading(false);
-          return;
-        }
-      }
-
-      // 2. If API fails (e.g., private repo, rate limits), try the direct GitHub releases redirect
-      // This will use the user's browser session to authorize the download if they have repo access
-      console.warn('GitHub API not accessible or no APK asset found. Redirecting to latest release download path...');
-      window.location.href = latestRedirectUrl;
-
-    } catch (error) {
-      console.error('Error fetching latest release metadata:', error);
-      // 3. Absolute fallback to hardcoded V1.0 APK
-      window.location.href = fallbackUrl;
-      setShowErrorAlert(true);
-    } finally {
-      // Keep loading spinner briefly to give visual feedback before redirect complete
-      setTimeout(() => setIsDownloading(false), 1500);
-    }
+  const handleDownload = () => {
+    triggerAPKDownload(setIsDownloading, setShowErrorAlert);
   };
 
   if (!showBanner) return null;
