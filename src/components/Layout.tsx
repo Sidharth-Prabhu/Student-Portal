@@ -67,14 +67,15 @@ const Layout: React.FC = () => {
               <button 
                 onClick={handleApkDownload}
                 disabled={isDownloadingApk}
-                className="p-2 text-text-secondary hover:text-emerald-400 transition-colors relative flex items-center justify-center disabled:opacity-60 cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-all text-xs font-bold disabled:opacity-60 cursor-pointer flex items-center gap-1.5"
                 title="Download Android App"
               >
                 {isDownloadingApk ? (
-                  <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                  <div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
                 ) : (
-                  <Download size={20} />
+                  <Download size={14} />
                 )}
+                <span>{isDownloadingApk ? 'Downloading...' : 'Download App'}</span>
               </button>
             )}
             <button className="p-2 text-text-secondary hover:text-text-primary transition-colors relative">
