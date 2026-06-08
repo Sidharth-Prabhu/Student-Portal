@@ -33,7 +33,7 @@ const ViewAttendance: React.FC = () => {
     try {
       // Fetch all docs once to avoid complex orderBy/where indexing issues
       // Since it's a semester's data, the document count is manageable (~100-200 docs)
-      const q = query(collection(db, 'semester_4'));
+      const q = query(collection(db, 'attendance'));
       const snap = await getDocs(q);
       
       if (!snap.empty) {

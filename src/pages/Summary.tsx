@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   UserMinus, 
   Clock,
-  PieChart as PieIcon
+  PieChart as PieIcon,
+  Copy,
+  Check
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -19,11 +21,63 @@ const Summary: React.FC = () => {
   const today = new Date().toISOString().split('T')[0];
   const [data, setData] = useState<AttendanceDayData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const handleCopyReport = () => {
+    if (!data) return;
+    const dateObj = new Date(today);
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+    const [year, month, dayStr] = today.split('-');
+    const formattedDate = `${dayStr.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+
+    const absentsList = data.absents || [];
+    const absentStudents = students.filter(s => absentsList.includes(s.regNum));
+    const absentText = absentStudents.length > 0
+      ? absentStudents.map(s => s.regNum.slice(-3)).join(', ')
+      : 'Nil';
+
+    const totalStrength = students.length;
+    const absentCount = absentStudents.length;
+    const presentCount = totalStrength - absentCount;
+
+    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(report).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        fallbackCopy(report);
+      });
+    } else {
+      fallbackCopy(report);
+    }
+  };
 
   useEffect(() => {
     const fetchToday = async () => {
       try {
-        const docRef = doc(db, 'semester_4', today);
+        const docRef = doc(db, 'attendance', today);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setData(docSnap.data());
@@ -67,6 +121,24 @@ const Summary: React.FC = () => {
             <h1 className="text-2xl font-black">Today's Overview</h1>
             <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mt-1">{new Date().toDateString()}</p>
           </div>
+          {data && (
+            <button
+              onClick={handleCopyReport}
+              className="mt-2 flex items-center gap-2 px-4 py-2 bg-bg-secondary hover:bg-accent-purple/15 text-text-secondary hover:text-accent-purple rounded-xl border border-border-color text-xs font-bold transition-all active:scale-95"
+            >
+              {copied ? (
+                <>
+                  <Check size={14} className="text-emerald-400" />
+                  Copied Report!
+                </>
+              ) : (
+                <>
+                  <Copy size={14} />
+                  Copy WhatsApp Report
+                </>
+              )}
+            </button>
+          )}
         </div>
       </section>
 

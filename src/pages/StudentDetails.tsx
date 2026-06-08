@@ -27,7 +27,7 @@ const StudentDetails: React.FC = () => {
     const fetchHistory = async () => {
       if (!id) return;
       try {
-        const snap = await getDocs(collection(db, 'semester_4'));
+        const snap = await getDocs(collection(db, 'attendance'));
         const absents: string[] = [];
         const iods: string[] = [];
         const eods: string[] = [];

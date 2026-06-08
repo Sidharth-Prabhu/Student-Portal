@@ -6,10 +6,11 @@ import {
   Search,
   ShieldCheck,
   Briefcase,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Copy
 } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
 
@@ -99,12 +100,63 @@ const MarkAttendance: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+    }
+    document.body.removeChild(textArea);
+  };
+
+  const handleCopyReport = () => {
+    const [year, month, dayStr] = selectedDate.split('-');
+    const dateObj = new Date(Number(year), Number(month) - 1, Number(dayStr));
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+    const formattedDate = `${dayStr.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+    
+    const absentList = students.filter(s => attendance[s.regNum] === 'absent');
+    const absentText = absentList.length > 0
+      ? absentList.map(s => s.regNum.slice(-3)).join(', ')
+      : 'Nil';
+      
+    const totalStrength = students.length;
+    const absentCount = absentList.length;
+    const presentCount = totalStrength - absentCount;
+    
+    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(report).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        fallbackCopy(report);
+      });
+    } else {
+      fallbackCopy(report);
+    }
+  };
 
   const fetchAttendance = useCallback(async () => {
     setIsLoading(true);
     try {
-      const docRef = doc(db, 'semester_4', selectedDate);
+      const docRef = doc(db, 'attendance', selectedDate);
       const docSnap = await getDoc(docRef);
       
       const newAttendance: Record<string, AttendanceStatus> = {};
@@ -129,13 +181,76 @@ const MarkAttendance: React.FC = () => {
   }, [fetchAttendance]);
 
   const toggleStatus = (regNum: string) => {
-    // Disabled for Read Only Mode
-    console.log("Marking disabled", regNum);
+    setAttendance(prev => {
+      const current = prev[regNum] || 'present';
+      const next = current === 'present' ? 'absent' : 'present';
+      return { ...prev, [regNum]: next };
+    });
   };
 
   const handleSwipe = (regNum: string, info: PanInfo) => {
-    // Disabled for Read Only Mode
-    console.log("OD marking disabled", regNum, info);
+    const threshold = 50;
+    if (info.offset.x > threshold) {
+      setAttendance(prev => ({ ...prev, [regNum]: 'external_od' }));
+    } else if (info.offset.x < -threshold) {
+      setAttendance(prev => ({ ...prev, [regNum]: 'internal_od' }));
+    }
+  };
+
+  const saveAttendance = async () => {
+    setIsSaving(true);
+    try {
+      const absents: string[] = [];
+      const internal_od: string[] = [];
+      const external_od: string[] = [];
+
+      Object.entries(attendance).forEach(([regNum, status]) => {
+        if (status === 'absent') absents.push(regNum);
+        else if (status === 'internal_od') internal_od.push(regNum);
+        else if (status === 'external_od') external_od.push(regNum);
+      });
+
+      const docRef = doc(db, 'attendance', selectedDate);
+      await setDoc(docRef, {
+        absents,
+        internal_od,
+        external_od
+      });
+
+      // Format report
+      const [year, month, dayStr] = selectedDate.split('-');
+      const dateObj = new Date(Number(year), Number(month) - 1, Number(dayStr));
+      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+      const formattedDate = `${dayStr.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
+      
+      const absentList = students.filter(s => attendance[s.regNum] === 'absent');
+      const absentText = absentList.length > 0
+        ? absentList.map(s => s.regNum.slice(-3)).join(', ')
+        : 'Nil';
+        
+      const totalStrength = students.length;
+      const absentCount = absentList.length;
+      const presentCount = totalStrength - absentCount;
+      
+      const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(report).then(() => {
+          alert("Attendance saved and copied to clipboard successfully!");
+        }).catch(() => {
+          fallbackCopy(report);
+          alert("Attendance saved and copied to clipboard successfully!");
+        });
+      } else {
+        fallbackCopy(report);
+        alert("Attendance saved and copied to clipboard successfully!");
+      }
+    } catch (e) {
+      console.error("Save failed", e);
+      alert("Failed to save attendance.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
 
@@ -160,34 +275,43 @@ const MarkAttendance: React.FC = () => {
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-2xl font-black">Attendance Records</h1>
-              <span className="px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-500/20">Read Only</span>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">Active</span>
             </div>
-            <div 
-              className="flex items-center gap-3 bg-bg-secondary p-3 rounded-2xl border border-border-color cursor-pointer active:bg-bg-secondary/80"
-              onClick={(e) => {
-                const input = e.currentTarget.querySelector('input');
-                if (input instanceof HTMLInputElement) {
-                  const target = input as any;
-                  try {
-                    if (target.showPicker) {
-                      target.showPicker();
-                    } else {
+            <div className="flex gap-2">
+              <div 
+                className="flex items-center gap-3 bg-bg-secondary p-3 rounded-2xl border border-border-color cursor-pointer active:bg-bg-secondary/80 grow"
+                onClick={(e) => {
+                  const input = e.currentTarget.querySelector('input');
+                  if (input instanceof HTMLInputElement) {
+                    const target = input as any;
+                    try {
+                      if (target.showPicker) {
+                        target.showPicker();
+                      } else {
+                        target.focus();
+                      }
+                    } catch (err) {
                       target.focus();
                     }
-                  } catch (err) {
-                    target.focus();
                   }
-                }
-              }}
-            >
-              <CalendarIcon size={18} className="text-accent-blue" />
-              <input 
-                type="date" 
-                value={selectedDate}
-                max={new Date().toISOString().split('T')[0]}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-transparent text-sm font-bold focus:outline-none grow color-scheme-dark cursor-pointer"
-              />
+                }}
+              >
+                <CalendarIcon size={18} className="text-accent-blue" />
+                <input 
+                  type="date" 
+                  value={selectedDate}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="bg-transparent text-sm font-bold focus:outline-none grow color-scheme-dark cursor-pointer"
+                />
+              </div>
+              <button
+                onClick={handleCopyReport}
+                className="p-3 bg-bg-secondary hover:bg-accent-blue/10 text-text-secondary hover:text-accent-blue rounded-2xl border border-border-color active:scale-95 transition-all flex items-center justify-center shrink-0"
+                title="Copy WhatsApp Report"
+              >
+                {copied ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
+              </button>
             </div>
           </div>
 
@@ -258,10 +382,23 @@ const MarkAttendance: React.FC = () => {
 
       {/* Floating Action Bar */}
       <div className="fixed bottom-28 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
-        <div className="w-full bg-bg-card/80 backdrop-blur-xl border border-border-color text-text-secondary font-black py-5 rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all text-base">
-          <ShieldCheck size={24} className="text-red-400" />
-          Marking Disabled
-        </div>
+        <button 
+          onClick={saveAttendance}
+          disabled={isSaving}
+          className="w-full bg-accent-blue hover:bg-accent-blue/90 disabled:bg-bg-card/85 text-white disabled:text-text-secondary font-black py-5 rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all text-base cursor-pointer disabled:cursor-not-allowed border border-border-color/10"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="animate-spin text-white" size={24} />
+              Saving Attendance...
+            </>
+          ) : (
+            <>
+              <Check size={24} className="text-white" />
+              Save Attendance
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

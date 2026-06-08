@@ -62,7 +62,7 @@ const Attendance: React.FC = () => {
         throw new Error('Student not found.');
       }
 
-      const snap = await getDocs(collection(db, 'semester_4'));
+      const snap = await getDocs(collection(db, 'attendance'));
       const docs = snap.docs;
 
       const filtered = docs.filter(d => {

@@ -153,7 +153,7 @@ const Dashboard: React.FC = () => {
 
       const fetchAttendance = async () => {
         try {
-          const snap = await getDocs(collection(db, 'semester_4'));
+          const snap = await getDocs(collection(db, 'attendance'));
           const docs = snap.docs;
           const total = docs.length;
 
@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
           </Link>
         )}
 
-        <Link to="/exam-timetable" className="bg-bg-card border border-border-color p-4 rounded-2xl flex flex-col gap-2 shadow-sm active:scale-95 transition-transform block text-left">
+        {/* <Link to="/exam-timetable" className="bg-bg-card border border-border-color p-4 rounded-2xl flex flex-col gap-2 shadow-sm active:scale-95 transition-transform block text-left">
           <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center text-accent-blue">
             <Calendar size={18} />
           </div>
@@ -265,7 +265,7 @@ const Dashboard: React.FC = () => {
               End Semester
             </p>
           </div>
-        </Link>
+        </Link> */}
       </section>
 
 
