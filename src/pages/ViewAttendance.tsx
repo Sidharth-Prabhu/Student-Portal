@@ -136,9 +136,7 @@ const ViewAttendance: React.FC = () => {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
-          files: [file],
-          title: 'Attendance Summary',
-          text: `Attendance Summary CSV file from ${fromDate} to ${toDate}`
+          files: [file]
         });
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
