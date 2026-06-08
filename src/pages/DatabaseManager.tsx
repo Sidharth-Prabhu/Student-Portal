@@ -138,7 +138,7 @@ const JSONTreeNode: React.FC<{
 
 const DatabaseManager: React.FC = () => {
   const [activeCollection, setActiveCollection] = useState('attendance');
-  const [availableCollections] = useState(['attendance', 'semester_4', 'absent_attendance', 'user_logs', 'authorized_admins']);
+  const [availableCollections] = useState(['attendance', 'user_logs', 'authorized_admins']);
   const [documents, setDocuments] = useState<AttendanceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

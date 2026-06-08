@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import InstallPWA from './InstallPWA';
+import DownloadAPK from './DownloadAPK';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -126,6 +127,9 @@ const Layout: React.FC = () => {
         </nav>
         </>
       )}
+
+      {/* Dynamic Download Android App Banner */}
+      <DownloadAPK isLoggedIn={!!user} />
     </div>
   );
 };

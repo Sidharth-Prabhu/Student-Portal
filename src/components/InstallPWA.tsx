@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, Smartphone } from 'lucide-react';
+import { isChromeOrSafariAndNotWebView } from './DownloadAPK';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -32,8 +33,10 @@ const InstallPWA: React.FC = () => {
       const promptEvent = e as BeforeInstallPromptEvent;
       setDeferredPrompt(promptEvent);
       
-      // Only show if not already installed/standalone
-      if (!isStandalone) {
+      const isApkEligible = isChromeOrSafariAndNotWebView() && localStorage.getItem('download-apk-dismissed') !== 'true';
+      
+      // Only show if not already installed/standalone and APK banner is not active/eligible
+      if (!isStandalone && !isApkEligible) {
         // Show the popup after a short delay
         setTimeout(() => setShowPopup(true), 3000);
       }
@@ -42,7 +45,18 @@ const InstallPWA: React.FC = () => {
     window.addEventListener('beforeinstallprompt', handler);
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isStandalone]);
+
+  useEffect(() => {
+    const checkAndShowPwa = () => {
+      if (deferredPrompt && !isStandalone) {
+        setTimeout(() => setShowPopup(true), 1500);
+      }
+    };
+
+    window.addEventListener('download-apk-dismissed-event', checkAndShowPwa);
+    return () => window.removeEventListener('download-apk-dismissed-event', checkAndShowPwa);
+  }, [deferredPrompt, isStandalone]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
