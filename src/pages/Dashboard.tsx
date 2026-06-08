@@ -15,9 +15,7 @@ import {
   Terminal,
   Clock,
   Calculator,
-  Calendar,
-  MapPin,
-  Search
+  Calendar
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
@@ -354,7 +352,7 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </section>
-      {/* Semester Exam Seating - Coming Soon */}
+      {/* Semester Exam Seating - Coming Soon
       <section className="bg-bg-card border border-border-color p-5 rounded-3xl relative overflow-hidden shadow-xl opacity-60 grayscale-[0.5]">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full"></div>
         <div className="relative z-10">
@@ -395,6 +393,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* Quick Navigation Cards */}
       <section className="space-y-4">

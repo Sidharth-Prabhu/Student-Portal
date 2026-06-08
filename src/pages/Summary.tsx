@@ -62,15 +62,26 @@ const Summary: React.FC = () => {
 
     const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
 
+    const openWhatsApp = () => {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
+      const newWindow = window.open(whatsappUrl, '_blank');
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        window.location.href = whatsappUrl;
+      }
+    };
+
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(report).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+        openWhatsApp();
       }).catch(() => {
         fallbackCopy(report);
+        openWhatsApp();
       });
     } else {
       fallbackCopy(report);
+      openWhatsApp();
     }
   };
 
