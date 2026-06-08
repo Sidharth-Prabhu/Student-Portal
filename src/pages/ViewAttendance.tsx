@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Download, 
   Search,
-  ChevronRight
+  ChevronRight,
+  Share2,
+  Check
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
@@ -28,6 +29,27 @@ const ViewAttendance: React.FC = () => {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+    }
+    document.body.removeChild(textArea);
+  };
 
   const fetchInitialDates = useCallback(async () => {
     try {
@@ -113,15 +135,28 @@ const ViewAttendance: React.FC = () => {
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `attendance_summary_${fromDate}_to_${toDate}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    const openWhatsApp = () => {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(csvContent)}`;
+      const newWindow = window.open(whatsappUrl, '_blank');
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        window.location.href = whatsappUrl;
+      }
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(csvContent).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        openWhatsApp();
+      }).catch(() => {
+        fallbackCopy(csvContent);
+        openWhatsApp();
+      });
+    } else {
+      fallbackCopy(csvContent);
+      openWhatsApp();
+    }
   };
 
   const summaryData = getSummary();
@@ -134,9 +169,10 @@ const ViewAttendance: React.FC = () => {
           <h1 className="text-xl font-bold">Attendance Analytics</h1>
           <button 
             onClick={exportCSV}
-            className="p-2 bg-accent-blue/10 text-accent-blue rounded-xl active:scale-95 transition-transform"
+            className="p-2 bg-accent-blue/10 text-accent-blue rounded-xl active:scale-95 transition-transform flex items-center justify-center shrink-0"
+            title="Share CSV on WhatsApp"
           >
-            <Download size={20} />
+            {copied ? <Check size={20} className="text-emerald-400" /> : <Share2 size={20} />}
           </button>
         </div>
 

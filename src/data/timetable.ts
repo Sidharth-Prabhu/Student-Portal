@@ -18,9 +18,9 @@ export const timeSlots = [
 ];
 
 export const timetable: Record<string, string[]> = {
-  "Monday": ["DAA-CS23431(B1)/OS-CS23422(B2)", "DAA-CS23431(B1)/OS-CS23422(B2)", "Break", "DA-AD23411", "OS-CS23412", "P&S-MA23411", "Lunch", "ML-AL23411", "DAA-CS23431"],
-  "Tuesday": ["ML-AL23411", "OS-CS23412", "Break", "DA-AD23411", "OS-CS23422(B1)/ML-AL23421(B2)", "OS-CS23422(B1)/ML-AL23421(B2)", "Lunch", "DAA-CS23431", "P&S-MA23411"],
-  "Wednesday": ["DAA-CS23431", "ML-AL23411", "Break", "P&S-MA23411", "ESS-GE23411", "MENTORING", "Lunch", "DA-AD23421(B1)/DAA-CS23431(B2)", "DA-AD23421(B1)/DAA-CS23431(B2)"],
-  "Thursday": ["OS-CS23412", "ESS-GE23411", "Break", "DA-AD23411", "P&S-MA23411", "DAA-CS23431", "Lunch", "P&S-MA23411", "ML-AL23411"],
-  "Friday": ["ML-AL23421(B1)/DA-AD23421(B2)", "ML-AL23421(B1)/DA-AD23421(B2)", "Break", "DA-AD23411", "P&S-MA23411", "OS-CS23412", "Lunch", "PLACEMENT", "ESS-GE23411"]
+  "Monday": ["DL-AD23511", "BDA-AD23V12", "Break", "CN-CS23511", "DEV-AD23532", "BA-CB23531", "Lunch", "DEV-III AIDS E", "DEV-III AIDS E"],
+  "Tuesday": ["IVA-AD23V15", "DEV-AD23532", "Break", "DL-AD23511", "CN-III AIDS E", "CN-III AIDS E", "Lunch", "BA-CB23531", "Aptitude"],
+  "Wednesday": ["DL-III AIDS E", "DL-III AIDS E", "Break", "IVA-AD23V15", "BA-CB23531", "BDA-AD23V12", "Lunch", "CN-CS23511", "NPTEL"],
+  "Thursday": ["BA-CB23531", "CN-CS23511", "Break", "DL-AD23511", "IVA-AD23V15", "BDA-AD23V12", "Lunch", "DEV-AD23532", "Mentoring"],
+  "Friday": ["BDA-AD23V12", "IVA-AD23V15", "Break", "DL-AD23511", "CN-CS23511", "DEV-AD23532", "Lunch", "BA-III AIDS E", "BA-III AIDS E"]
 };
