@@ -84,15 +84,15 @@ const Attendance: React.FC = () => {
         
         if (data.absents?.includes(targetReg)) {
           absentCount++;
-          records.push({ date: dateStr, type: 'Absent', color: 'text-red-400', bg: 'bg-red-400/10', icon: XCircle });
+          records.push({ date: dateStr, type: 'Absent', color: 'text-red-500 dark:text-red-400', bg: 'neu-inset', icon: XCircle });
         }
         if (data.internal_od?.includes(targetReg)) {
           intODCount++;
-          records.push({ date: dateStr, type: 'Internal OD', color: 'text-yellow-400', bg: 'bg-yellow-400/10', icon: Briefcase });
+          records.push({ date: dateStr, type: 'Internal OD', color: 'text-yellow-600 dark:text-yellow-400', bg: 'neu-inset', icon: Briefcase });
         }
         if (data.external_od?.includes(targetReg)) {
           extODCount++;
-          records.push({ date: dateStr, type: 'External OD', color: 'text-blue-400', bg: 'bg-blue-400/10', icon: ShieldCheck });
+          records.push({ date: dateStr, type: 'External OD', color: 'text-blue-500 dark:text-blue-400', bg: 'neu-inset', icon: ShieldCheck });
         }
       });
 
@@ -133,10 +133,10 @@ const Attendance: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Excellent': return 'text-emerald-400 bg-emerald-400/10';
-      case 'Good': return 'text-blue-400 bg-blue-400/10';
-      case 'Warning': return 'text-yellow-400 bg-yellow-400/10';
-      case 'Critical': return 'text-red-400 bg-red-400/10';
+      case 'Excellent': return 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10';
+      case 'Good': return 'text-blue-500 dark:text-blue-400 bg-blue-500/10';
+      case 'Warning': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-500/10';
+      case 'Critical': return 'text-red-500 dark:text-red-400 bg-red-500/10';
       default: return 'text-text-secondary bg-bg-secondary';
     }
   };
@@ -150,8 +150,9 @@ const Attendance: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
+      <h1 className="text-2xl font-black text-text-primary px-2 pt-2">Attendance</h1>
       {/* Search Section */}
-      <section className="bg-bg-card border border-border-color rounded-3xl p-6 shadow-xl">
+      <section className="neu-flat rounded-3xl p-6 border border-border-color/10">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="space-y-2">
             <div className="relative">
@@ -163,7 +164,7 @@ const Attendance: React.FC = () => {
                 value={reg}
                 onChange={(e) => setReg(e.target.value)}
                 placeholder="Registration Number"
-                className="w-full bg-bg-secondary border border-border-color rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-accent-blue text-sm"
+                className="w-full neu-input rounded-2xl py-3 pl-12 pr-4 text-sm text-text-primary placeholder:text-text-secondary/40 focus:outline-none transition-all font-mono"
               />
             </div>
           </div>
@@ -171,12 +172,12 @@ const Attendance: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center justify-between w-full text-xs font-bold uppercase tracking-widest text-text-secondary px-2"
+            className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-widest text-text-secondary px-2 cursor-pointer hover:text-text-primary"
           >
             <div className="flex items-center gap-2">
-              <Filter size={14} /> Filters
+              <Filter size={12} /> Filters
             </div>
-            <ChevronDown size={14} className={clsx("transition-transform", showFilters && "rotate-180")} />
+            <ChevronDown size={12} className={clsx("transition-transform duration-300", showFilters && "rotate-180")} />
           </button>
 
           <AnimatePresence>
@@ -189,21 +190,21 @@ const Attendance: React.FC = () => {
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-text-secondary ml-2">From</label>
+                    <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">From</label>
                     <input
                       type="date"
                       value={fromDate}
                       onChange={(e) => setFromDate(e.target.value)}
-                      className="w-full bg-bg-secondary border border-border-color rounded-xl py-3 px-3 text-sm color-scheme-dark focus:border-accent-blue outline-none transition-colors"
+                      className="w-full neu-input rounded-xl py-3 px-3 text-sm outline-none transition-colors"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-text-secondary ml-2">To</label>
+                    <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">To</label>
                     <input
                       type="date"
                       value={toDate}
                       onChange={(e) => setToDate(e.target.value)}
-                      className="w-full bg-bg-secondary border border-border-color rounded-xl py-3 px-3 text-sm color-scheme-dark focus:border-accent-blue outline-none transition-colors"
+                      className="w-full neu-input rounded-xl py-3 px-3 text-sm outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -214,7 +215,7 @@ const Attendance: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-accent-blue to-accent-purple text-white font-bold py-3.5 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 text-sm"
+            className="w-full neu-btn text-accent-blue font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 text-sm"
           >
             {isLoading ? <Database className="animate-spin" size={18} /> : <Search size={18} />}
             {isLoading ? 'Fetching...' : 'Check Attendance'}
@@ -231,67 +232,73 @@ const Attendance: React.FC = () => {
             className="space-y-6"
           >
             {/* Circular Progress & Major Stats */}
-            <div className="bg-bg-card border border-border-color rounded-3xl p-6 flex flex-col items-center">
+            <div className="neu-flat rounded-3xl p-6 flex flex-col items-center border border-border-color/10">
               <div className="relative w-40 h-40 mb-6">
-                <svg className="w-full h-full" viewBox="0 0 36 36">
-                  <path
-                    className="stroke-bg-secondary"
-                    strokeWidth="3"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  <circle
+                    className="text-bg-secondary"
+                    strokeWidth="3.2"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="15.9155"
+                    cx="18"
+                    cy="18"
                   />
-                  <path
-                    className="stroke-accent-blue transition-all duration-1000 ease-out"
-                    strokeWidth="3"
+                  <circle
+                    className="text-accent-blue transition-all duration-1000 ease-out"
+                    strokeWidth="3.2"
                     strokeDasharray={`${results.percentage}, 100`}
                     strokeLinecap="round"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="15.9155"
+                    cx="18"
+                    cy="18"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-black">{results.percentage}%</span>
-                  <span className={clsx("text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mt-1", getStatusColor(results.status))}>
+                  <span className={clsx("text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full mt-1.5 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.1)]", getStatusColor(results.status))}>
                     {results.status}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 w-full">
-                <div className="text-center">
-                  <p className="text-xl font-bold">{results.total}</p>
-                  <p className="text-[10px] text-text-secondary uppercase font-bold">Days</p>
+              <div className="grid grid-cols-4 gap-2 w-full">
+                <div className="text-center py-2 rounded-xl bg-bg-secondary/40 border border-border-color">
+                  <p className="text-lg font-extrabold">{results.total}</p>
+                  <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Days</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-emerald-400">{results.present}</p>
-                  <p className="text-[10px] text-text-secondary uppercase font-bold">Pres</p>
+                <div className="text-center py-2 rounded-xl bg-bg-secondary/40 border border-border-color">
+                  <p className="text-lg font-extrabold text-emerald-500 dark:text-emerald-400">{results.present}</p>
+                  <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Pres</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-red-400">{results.absent}</p>
-                  <p className="text-[10px] text-text-secondary uppercase font-bold">Abs</p>
+                <div className="text-center py-2 rounded-xl bg-bg-secondary/40 border border-border-color">
+                  <p className="text-lg font-extrabold text-red-500 dark:text-red-400">{results.absent}</p>
+                  <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Abs</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-accent-purple">{results.od}</p>
-                  <p className="text-[10px] text-text-secondary uppercase font-bold">OD</p>
+                <div className="text-center py-2 rounded-xl bg-bg-secondary/40 border border-border-color">
+                  <p className="text-lg font-extrabold text-accent-purple">{results.od}</p>
+                  <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">OD</p>
                 </div>
               </div>
             </div>
 
             {/* Safe Leaves Banner */}
             <div className={clsx(
-              "p-5 rounded-3xl border flex items-center gap-4",
-              results.safeLeaves > 0 ? "bg-emerald-400/10 border-emerald-400/20" : "bg-red-400/10 border-red-400/20"
+              "p-5 rounded-3xl neu-flat flex items-center gap-4 border-l-4 border border-border-color/10",
+              results.safeLeaves > 0 ? "border-l-emerald-500" : "border-l-red-500"
             )}>
-              <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", results.safeLeaves > 0 ? "bg-emerald-400/20 text-emerald-400" : "bg-red-400/20 text-red-400")}>
-                <TrendingUp size={24} />
+              <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 neu-inset", results.safeLeaves > 0 ? "text-emerald-500 dark:text-emerald-400" : "text-red-500 dark:text-red-400")}>
+                <TrendingUp size={22} />
               </div>
               <div>
-                <p className="text-sm font-bold">
+                <p className="text-sm font-bold text-text-primary">
                   {results.safeLeaves > 0 
                     ? `You can take ${results.safeLeaves} more leave(s).` 
                     : "No more leaves allowed."}
                 </p>
-                <p className="text-[10px] text-text-secondary opacity-80 uppercase tracking-widest font-bold">Safe Leave Balance</p>
+                <p className="text-[9px] text-text-secondary uppercase tracking-widest font-bold mt-0.5">Safe Leave Balance</p>
               </div>
             </div>
 
@@ -299,40 +306,40 @@ const Attendance: React.FC = () => {
             <div className="space-y-3 flex flex-col h-[400px]">
               <h3 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2 flex-shrink-0">History</h3>
               {results.records.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-4 mask-gradient-bottom">
+                <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-4 mask-gradient-bottom">
                   {results.records.map((record, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl shrink-0">
+                    <div key={idx} className="flex items-center justify-between p-4 neu-flat rounded-2xl shrink-0 border border-border-color/10">
                       <div className="flex items-center gap-3">
-                        <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", record.bg)}>
-                          <record.icon size={18} className={record.color} />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center neu-inset shrink-0">
+                          <record.icon size={16} className={record.color} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold">{formatDate(record.date)}</p>
-                          <p className={clsx("text-[10px] font-bold uppercase tracking-tight", record.color)}>{record.type}</p>
+                          <p className="text-sm font-bold text-text-primary">{formatDate(record.date)}</p>
+                          <p className={clsx("text-[9px] font-bold uppercase tracking-wider mt-0.5", record.color)}>{record.type}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center bg-bg-secondary/20 rounded-3xl border border-dashed border-border-color">
-                  <CheckCircle2 className="mx-auto text-text-secondary opacity-20 mb-2" size={32} />
+                <div className="p-8 text-center neu-flat rounded-3xl border border-dashed border-border-color/40 flex flex-col items-center justify-center">
+                  <CheckCircle2 className="text-text-secondary opacity-35 mb-2" size={32} />
                   <p className="text-xs text-text-secondary">No leave records found.</p>
                 </div>
               )}
             </div>
           </motion.div>
         ) : error ? (
-          <div className="p-8 text-center bg-red-400/5 border border-red-400/20 rounded-3xl">
-            <AlertTriangle className="mx-auto text-red-400 mb-2" size={32} />
-            <p className="text-sm font-bold text-red-400">{error}</p>
+          <div className="p-8 text-center bg-red-500/10 border border-red-500/20 rounded-3xl">
+            <AlertTriangle className="mx-auto text-red-500 dark:text-red-400 mb-2" size={32} />
+            <p className="text-sm font-bold text-red-500 dark:text-red-400">{error}</p>
           </div>
         ) : (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-bg-card border border-border-color rounded-full flex items-center justify-center mx-auto mb-4">
-              <TrendingUp className="text-text-secondary opacity-20" size={32} />
+          <div className="p-12 text-center flex flex-col items-center justify-center neu-flat rounded-3xl border border-border-color/10">
+            <div className="w-16 h-16 neu-inset rounded-full flex items-center justify-center mb-4">
+              <TrendingUp className="text-text-secondary/40" size={26} />
             </div>
-            <p className="text-xs text-text-secondary uppercase tracking-widest font-bold">Search to view results</p>
+            <p className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Search to view results</p>
           </div>
         )}
       </AnimatePresence>

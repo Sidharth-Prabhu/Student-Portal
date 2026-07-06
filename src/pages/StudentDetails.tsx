@@ -49,45 +49,48 @@ const StudentDetails: React.FC = () => {
     fetchHistory();
   }, [id]);
 
-  if (!student) return <div className="p-8 text-center">Student not found</div>;
+  if (!student) return <div className="p-8 text-center neu-flat rounded-3xl">Student not found</div>;
 
   return (
     <div className="space-y-6 max-w-lg mx-auto pb-8">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="p-2 bg-bg-card border border-border-color rounded-xl">
-          <ChevronLeft size={20} />
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft size={18} />
         </button>
-        <h1 className="text-xl font-bold">Student Profile</h1>
+        <h1 className="text-xl font-bold text-text-primary">Student Profile</h1>
       </div>
 
       {/* Profile Card */}
-      <section className="bg-bg-card border border-border-color rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <section className="neu-flat rounded-3xl p-8 relative overflow-hidden border border-border-color/10">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full"></div>
         <div className="relative z-10 flex flex-col items-center text-center gap-4">
-          <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white text-3xl font-black shadow-2xl">
+          <div className="w-24 h-24 rounded-full neu-inset flex items-center justify-center text-accent-blue text-3xl font-black border border-border-color/15">
             {student.name.charAt(0)}
           </div>
           <div>
-            <h2 className="text-2xl font-black">{student.name}</h2>
-            <p className="text-text-secondary font-mono text-sm mt-1">{student.regNum}</p>
+            <h2 className="text-2xl font-black text-text-primary">{student.name}</h2>
+            <p className="text-text-secondary font-mono text-xs mt-1.5">{student.regNum}</p>
           </div>
 
-          <div className="flex gap-3 w-full mt-4">
+          <div className="flex gap-4 w-full mt-4">
             <a 
               href={`tel:${student.phone}`}
-              className="flex-grow flex items-center justify-center gap-2 py-4 bg-bg-secondary border border-border-color rounded-2xl font-bold text-xs active:scale-95 transition-transform"
+              className="flex-grow flex items-center justify-center gap-2 py-4 neu-btn rounded-2xl font-bold text-xs text-accent-blue"
             >
-              <Phone size={16} className="text-accent-blue" />
+              <Phone size={15} />
               Call
             </a>
             <a 
               href={`https://wa.me/${student.phone}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-grow flex items-center justify-center gap-2 py-4 bg-bg-secondary border border-border-color rounded-2xl font-bold text-xs active:scale-95 transition-transform"
+              className="flex-grow flex items-center justify-center gap-2 py-4 neu-btn rounded-2xl font-bold text-xs text-emerald-500"
             >
-              <MessageCircle size={16} className="text-emerald-400" />
+              <MessageCircle size={15} />
               WhatsApp
             </a>
           </div>
@@ -95,18 +98,18 @@ const StudentDetails: React.FC = () => {
       </section>
 
       {/* Stats */}
-      <section className="grid grid-cols-3 gap-3">
-        <div className="bg-bg-card border border-border-color p-4 rounded-3xl text-center shadow-lg">
+      <section className="grid grid-cols-3 gap-4">
+        <div className="neu-inset p-4 rounded-2xl text-center">
           <p className="text-[8px] font-black text-text-secondary uppercase tracking-widest mb-1">Absents</p>
-          <p className="text-xl font-black text-red-400">{history.absents.length}</p>
+          <p className="text-xl font-black text-red-500 dark:text-red-400 mt-1">{history.absents.length}</p>
         </div>
-        <div className="bg-bg-card border border-border-color p-4 rounded-3xl text-center shadow-lg">
+        <div className="neu-inset p-4 rounded-2xl text-center">
           <p className="text-[8px] font-black text-text-secondary uppercase tracking-widest mb-1">I-OD</p>
-          <p className="text-xl font-black text-blue-400">{history.iods.length}</p>
+          <p className="text-xl font-black text-blue-500 dark:text-blue-400 mt-1">{history.iods.length}</p>
         </div>
-        <div className="bg-bg-card border border-border-color p-4 rounded-3xl text-center shadow-lg">
+        <div className="neu-inset p-4 rounded-2xl text-center">
           <p className="text-[8px] font-black text-text-secondary uppercase tracking-widest mb-1">E-OD</p>
-          <p className="text-xl font-black text-purple-400">{history.eods.length}</p>
+          <p className="text-xl font-black text-purple-500 dark:text-purple-400 mt-1">{history.eods.length}</p>
         </div>
       </section>
 
@@ -118,47 +121,47 @@ const StudentDetails: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="py-12 flex justify-center">
+          <div className="py-12 flex justify-center neu-flat rounded-3xl border border-border-color/10">
             <div className="w-8 h-8 border-4 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="space-y-3">
             {history.absents.map(date => (
-              <div key={date} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl">
+              <div key={date} className="flex items-center justify-between p-4 neu-flat rounded-2xl border border-border-color/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-red-400/10 flex items-center justify-center text-red-400">
-                    <AlertCircle size={16} />
+                  <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-red-500 dark:text-red-400 shrink-0">
+                    <AlertCircle size={15} />
                   </div>
-                  <p className="text-sm font-bold">{date}</p>
+                  <p className="text-sm font-bold text-text-primary">{date}</p>
                 </div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-red-400/50">Absent</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-red-500 dark:text-red-400/70">Absent</p>
               </div>
             ))}
             {history.iods.map(date => (
-              <div key={date} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl">
+              <div key={date} className="flex items-center justify-between p-4 neu-flat rounded-2xl border border-border-color/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-400/10 flex items-center justify-center text-blue-400">
-                    <Clock size={16} />
+                  <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-blue-500 dark:text-blue-400 shrink-0">
+                    <Clock size={15} />
                   </div>
-                  <p className="text-sm font-bold">{date}</p>
+                  <p className="text-sm font-bold text-text-primary">{date}</p>
                 </div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-blue-400/50">Internal OD</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400/70">Internal OD</p>
               </div>
             ))}
             {history.eods.map(date => (
-              <div key={date} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl">
+              <div key={date} className="flex items-center justify-between p-4 neu-flat rounded-2xl border border-border-color/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-400/10 flex items-center justify-center text-purple-400">
-                    <Clock size={16} />
+                  <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-purple-500 dark:text-purple-400 shrink-0">
+                    <Clock size={15} />
                   </div>
-                  <p className="text-sm font-bold">{date}</p>
+                  <p className="text-sm font-bold text-text-primary">{date}</p>
                 </div>
-                <p className="text-[8px] font-black uppercase tracking-widest text-purple-400/50">External OD</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-purple-500 dark:text-purple-400/70">External OD</p>
               </div>
             ))}
             {history.absents.length === 0 && history.iods.length === 0 && history.eods.length === 0 && (
-              <div className="p-12 text-center text-text-secondary bg-bg-card border border-border-color rounded-3xl border-dashed">
-                <p className="text-sm font-bold">No records found for this student.</p>
+              <div className="p-12 text-center text-text-secondary neu-flat rounded-3xl border border-dashed border-border-color/40 flex flex-col items-center justify-center">
+                <p className="text-xs text-text-secondary">No records found for this student.</p>
               </div>
             )}
           </div>

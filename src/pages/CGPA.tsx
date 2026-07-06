@@ -150,6 +150,13 @@ const CGPA: React.FC = () => {
     return (totalPoints / totalCredits).toFixed(2);
   };
 
+  const handleEditSavedSem = (s: SavedSem) => {
+    setSelectedSem(s.sem);
+    setGrades(s.grades || {});
+    setCurrentGpa(s.gpa);
+    document.getElementById('gpa-planner-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="space-y-8 max-w-lg mx-auto pb-8">
       {/* GPA Banner */}
@@ -167,7 +174,7 @@ const CGPA: React.FC = () => {
       </section>
 
       {/* Calculator */}
-      <section className="space-y-4">
+      <section id="gpa-planner-form" className="space-y-4">
         <div className="bg-bg-card border border-border-color rounded-3xl p-6">
           <div className="flex items-center gap-3 mb-6">
             <PlusCircle size={20} className="text-accent-blue" />
@@ -280,13 +287,20 @@ const CGPA: React.FC = () => {
         {savedSems.length > 0 ? (
           <div className="space-y-2">
             {savedSems.map((s) => (
-              <div key={s.sem} className="flex items-center justify-between p-4 bg-bg-card border border-border-color rounded-2xl shadow-sm">
+              <div 
+                key={s.sem} 
+                onClick={() => handleEditSavedSem(s)}
+                className="flex items-center justify-between p-4 bg-bg-card border border-border-color hover:border-accent-blue rounded-2xl shadow-sm cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99] group"
+              >
                 <div>
-                  <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest">Semester {s.sem}</p>
+                  <p className="text-[10px] text-text-secondary uppercase font-bold tracking-widest group-hover:text-accent-blue transition-colors">Semester {s.sem}</p>
                   <p className="text-lg font-bold">{s.gpa.toFixed(2)}</p>
                 </div>
                 <button
-                  onClick={() => removeSem(s.sem)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeSem(s.sem);
+                  }}
                   className="p-2 text-text-secondary hover:text-red-400 active:scale-90 transition-all"
                 >
                   <Trash2 size={16} />

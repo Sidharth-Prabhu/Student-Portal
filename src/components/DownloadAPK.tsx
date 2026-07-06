@@ -2,23 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, X, AlertCircle } from 'lucide-react';
 
-// Robust browser detection: Chrome or Safari, but not Android WebView
 export const isChromeOrSafariAndNotWebView = (): boolean => {
   if (typeof window === 'undefined') return false;
   const ua = window.navigator.userAgent.toLowerCase();
   
-  // 1. Android WebView check
-  // - Typically contains '; wv)' or ' wv' or 'version/4.0' or 'webview'
-  // - document.referrer contains 'android-app://'
   const isAndroidWebView = 
     ua.includes('wv') || 
     ua.includes('webview') || 
     (ua.includes('android') && ua.includes('version/')) ||
     document.referrer.includes('android-app://');
-    
+     
   if (isAndroidWebView) return false;
   
-  // 2. Chrome check (Desktop, Mobile, iOS CriOS)
   const isChrome = (ua.includes('chrome') || ua.includes('crios')) && 
                     !ua.includes('edg') && 
                     !ua.includes('opr') && 
@@ -26,8 +21,7 @@ export const isChromeOrSafariAndNotWebView = (): boolean => {
                     !ua.includes('focus') && 
                     !ua.includes('firefox') && 
                     !ua.includes('fxios');
-                    
-  // 3. Safari check (Desktop, iOS Safari)
+                     
   const isSafari = ua.includes('safari') && 
                     !ua.includes('chrome') && 
                     !ua.includes('crios') && 
@@ -36,7 +30,7 @@ export const isChromeOrSafariAndNotWebView = (): boolean => {
                     !ua.includes('firefox') && 
                     !ua.includes('fxios') && 
                     !ua.includes('opr');
-                    
+                     
   return isChrome || isSafari;
 };
 
@@ -61,7 +55,6 @@ export const triggerAPKDownload = async (
   const latestRedirectUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/latest/download/app-release.apk';
 
   try {
-    // 1. Attempt to fetch latest release from GitHub API
     const response = await fetch('https://api.github.com/repos/Sidharth-Prabhu/Student-Portal/releases/latest', {
       headers: {
         'Accept': 'application/vnd.github.v3+json'
@@ -79,17 +72,14 @@ export const triggerAPKDownload = async (
       }
     }
 
-    // 2. If API fails (e.g., private repo, rate limits), try the direct GitHub releases redirect
     console.warn('GitHub API not accessible or no APK asset found. Redirecting to latest release download path...');
     window.location.href = latestRedirectUrl;
 
   } catch (error) {
     console.error('Error fetching latest release metadata:', error);
-    // 3. Absolute fallback to hardcoded V1.0 APK
     window.location.href = fallbackUrl;
     if (setShowErrorAlert) setShowErrorAlert(true);
   } finally {
-    // Keep loading spinner briefly to give visual feedback before redirect complete
     if (setIsDownloading) {
       setTimeout(() => setIsDownloading(false), 1500);
     }
@@ -106,7 +96,6 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
     const isDismissed = localStorage.getItem('download-apk-dismissed') === 'true';
 
     if (isEligible && !isDismissed) {
-      // Show the banner after a short delay for smooth loading entrance
       const timer = setTimeout(() => setShowBanner(true), 2500);
       return () => clearTimeout(timer);
     }
@@ -115,7 +104,6 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
   const handleDismiss = () => {
     setShowBanner(false);
     localStorage.setItem('download-apk-dismissed', 'true');
-    // Dispatch a custom event to notify InstallPWA that the APK banner is dismissed
     window.dispatchEvent(new Event('download-apk-dismissed-event'));
   };
 
@@ -131,23 +119,23 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
-        className={`fixed ${isLoggedIn ? 'bottom-24' : 'bottom-6'} left-4 right-4 z-[100] sm:left-auto sm:right-6 sm:w-80`}
+        className={`fixed ${isLoggedIn ? 'bottom-28' : 'bottom-6'} left-4 right-4 z-[100] sm:left-auto sm:right-6 sm:w-80`}
       >
-        <div className="bg-bg-card border border-emerald-500/30 rounded-3xl p-6 shadow-2xl shadow-emerald-950/30 backdrop-blur-xl relative">
+        <div className="neu-flat rounded-3xl p-6 relative border border-emerald-500/20 backdrop-blur-xl shadow-2xl">
           <button 
             onClick={handleDismiss}
-            className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors"
+            className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
             aria-label="Dismiss APK download suggestion"
           >
             <X size={18} />
           </button>
           
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
+            <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-emerald-500 shrink-0">
               <AndroidIcon className="w-6 h-6" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-sm">Download Android App</h3>
+              <h3 className="font-bold text-sm text-text-primary">Download Android App</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
                 Install the official Android app (.APK) for the fastest and most stable mobile experience.
               </p>
@@ -165,10 +153,10 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
             <button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-600/70 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 text-xs transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/20"
+              className="w-full neu-btn text-emerald-500 font-bold py-3 rounded-2xl flex items-center justify-center gap-2 text-xs transition-all active:scale-[0.98] border border-border-color/10"
             >
               {isDownloading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
               ) : (
                 <Download size={16} />
               )}
@@ -176,17 +164,16 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
             </button>
             <button
               onClick={handleDismiss}
-              className="w-full bg-bg-secondary text-text-secondary py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:text-text-primary transition-all"
+              className="w-full neu-btn text-text-secondary py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:text-text-primary transition-all border border-border-color/10"
             >
               Maybe Later
             </button>
           </div>
           
-          {/* Subtle note about fallback just in case */}
           <div className="mt-3 text-center">
             <a 
               href="https://github.com/Sidharth-Prabhu/Student-Portal/releases/download/V1.0/app-release.apk"
-              className="text-[9px] text-text-secondary hover:text-emerald-400 transition-colors underline"
+              className="text-[9px] text-text-secondary hover:text-emerald-500 transition-colors underline"
             >
               Having issues? Click here for the direct V1.0 link
             </a>

@@ -4,11 +4,13 @@ import {
   Clock,
   PieChart as PieIcon,
   Copy,
-  Check
+  Check,
+  ChevronLeft
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { students } from '../data/students';
+import { useNavigate } from 'react-router-dom';
 
 interface AttendanceDayData {
   absents?: string[];
@@ -18,6 +20,7 @@ interface AttendanceDayData {
 }
 
 const Summary: React.FC = () => {
+  const navigate = useNavigate();
   const today = new Date().toISOString().split('T')[0];
   const [data, setData] = useState<AttendanceDayData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,9 +107,9 @@ const Summary: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4 text-text-secondary">
-        <div className="w-12 h-12 border-4 border-accent-purple/30 border-t-accent-purple rounded-full animate-spin"></div>
-        <p className="text-xs font-black uppercase tracking-widest">Generating Summary...</p>
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-text-secondary max-w-lg mx-auto neu-flat rounded-3xl border border-border-color/10">
+        <div className="w-10 h-10 border-4 border-accent-purple/30 border-t-accent-purple rounded-full animate-spin"></div>
+        <p className="text-[10px] font-bold uppercase tracking-widest">Generating Summary...</p>
       </div>
     );
   }
@@ -121,25 +124,36 @@ const Summary: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto pb-8">
+      {/* Top Header Navigation */}
+      <div className="flex items-center gap-4 px-2 pt-2">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <h1 className="text-xl font-bold text-text-primary">Today's Summary</h1>
+      </div>
+
       {/* Header Card */}
-      <section className="bg-bg-card border border-border-color rounded-3xl p-8 shadow-xl relative overflow-hidden text-center">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-purple/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <section className="neu-flat rounded-3xl p-6 relative overflow-hidden text-center border border-border-color/10">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-purple/5 blur-3xl rounded-full"></div>
         <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-accent-purple/10 flex items-center justify-center text-accent-purple shadow-inner">
-            <PieIcon size={32} />
+          <div className="w-16 h-16 rounded-2xl neu-inset flex items-center justify-center text-accent-purple">
+            <PieIcon size={28} />
           </div>
           <div>
-            <h1 className="text-2xl font-black">Today's Overview</h1>
-            <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mt-1">{new Date().toDateString()}</p>
+            <h2 className="text-xl font-bold text-text-primary">Overview</h2>
+            <p className="text-text-secondary text-[10px] font-bold uppercase tracking-wider mt-1">{new Date().toDateString()}</p>
           </div>
           {data && (
             <button
               onClick={handleCopyReport}
-              className="mt-2 flex items-center gap-2 px-4 py-2 bg-bg-secondary hover:bg-accent-purple/15 text-text-secondary hover:text-accent-purple rounded-xl border border-border-color text-xs font-bold transition-all active:scale-95"
+              className="mt-2.5 flex items-center gap-2 px-5 py-2.5 neu-btn text-accent-purple rounded-xl text-xs font-bold"
             >
               {copied ? (
                 <>
-                  <Check size={14} className="text-emerald-400" />
+                  <Check size={14} className="text-emerald-500" />
                   Copied Report!
                 </>
               ) : (
@@ -155,41 +169,41 @@ const Summary: React.FC = () => {
 
       {/* Stats Grid */}
       <section className="grid grid-cols-2 gap-4">
-        <div className="bg-bg-card border border-border-color p-5 rounded-3xl shadow-lg">
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1">Present</p>
-          <div className="flex items-end gap-2">
-            <p className="text-3xl font-black text-emerald-400">{presentCount}</p>
+        <div className="neu-inset p-5 rounded-2xl text-left">
+          <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-1">Present</p>
+          <div className="flex items-end gap-1.5 mt-1">
+            <p className="text-3xl font-black text-emerald-500 dark:text-emerald-400">{presentCount}</p>
             <p className="text-xs text-text-secondary mb-1 font-bold">/ {students.length}</p>
           </div>
         </div>
-        <div className="bg-bg-card border border-border-color p-5 rounded-3xl shadow-lg">
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1">Absentees</p>
-          <p className="text-3xl font-black text-red-400">{absents.length}</p>
+        <div className="neu-inset p-5 rounded-2xl text-left">
+          <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-1">Absentees</p>
+          <p className="text-3xl font-black text-red-500 dark:text-red-400 mt-1">{absents.length}</p>
         </div>
       </section>
 
       {/* Breakdowns */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Absentees List */}
         <section className="space-y-3">
           <div className="flex items-center gap-2 px-2">
-            <div className="w-1.5 h-4 bg-red-400 rounded-full"></div>
-            <h2 className="text-xs font-black uppercase tracking-widest text-text-secondary">Absentees</h2>
+            <div className="w-1.5 h-4 bg-red-500 rounded-full"></div>
+            <h2 className="text-xs font-black uppercase tracking-wider text-text-secondary">Absentees</h2>
           </div>
-          <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden divide-y divide-border-color/50 shadow-lg">
+          <div className="neu-flat rounded-3xl overflow-hidden divide-y divide-border-color/10 border border-border-color/10">
             {absents.length === 0 ? (
               <div className="p-8 text-center text-text-secondary">
-                <p className="text-sm font-bold">All students present! 🎉</p>
+                <p className="text-xs font-bold text-text-secondary">All students present! 🎉</p>
               </div>
             ) : (
               absents.map((reg: string) => (
-                <div key={reg} className="p-4 flex items-center justify-between group">
+                <div key={reg} className="p-4 flex items-center justify-between group bg-transparent">
                   <div>
-                    <p className="text-sm font-bold">{getStudentName(reg)}</p>
+                    <p className="text-sm font-bold text-text-primary">{getStudentName(reg)}</p>
                     <p className="text-[10px] text-text-secondary font-mono mt-0.5">{reg}</p>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-red-400/10 flex items-center justify-center text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <UserMinus size={16} />
+                  <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-red-500 dark:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <UserMinus size={15} />
                   </div>
                 </div>
               ))
@@ -201,34 +215,34 @@ const Summary: React.FC = () => {
         <section className="space-y-3">
           <div className="flex items-center gap-2 px-2">
             <div className="w-1.5 h-4 bg-accent-blue rounded-full"></div>
-            <h2 className="text-xs font-black uppercase tracking-widest text-text-secondary">On Duty (OD)</h2>
+            <h2 className="text-xs font-black uppercase tracking-wider text-text-secondary">On Duty (OD)</h2>
           </div>
-          <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden divide-y divide-border-color/50 shadow-lg">
+          <div className="neu-flat rounded-3xl overflow-hidden divide-y divide-border-color/10 border border-border-color/10">
             {[...internalOD, ...externalOD].length === 0 ? (
               <div className="p-8 text-center text-text-secondary">
-                <p className="text-sm font-bold">No students on OD.</p>
+                <p className="text-xs text-text-secondary">No students on OD.</p>
               </div>
             ) : (
               <>
                 {internalOD.map((reg: string) => (
-                  <div key={reg} className="p-4 flex items-center justify-between bg-blue-500/5 group">
+                  <div key={reg} className="p-4 flex items-center justify-between group bg-transparent">
                     <div>
-                      <p className="text-sm font-bold">{getStudentName(reg)}</p>
-                      <p className="text-[10px] text-blue-400 font-mono mt-0.5">INTERNAL OD</p>
+                      <p className="text-sm font-bold text-text-primary">{getStudentName(reg)}</p>
+                      <p className="text-[9px] text-blue-500 dark:text-blue-400 font-bold uppercase mt-1 tracking-wider">INTERNAL OD</p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-blue-400/10 flex items-center justify-center text-blue-400">
-                      <Clock size={16} />
+                    <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-blue-500">
+                      <Clock size={15} />
                     </div>
                   </div>
                 ))}
                 {externalOD.map((reg: string) => (
-                  <div key={reg} className="p-4 flex items-center justify-between bg-purple-500/5 group">
+                  <div key={reg} className="p-4 flex items-center justify-between group bg-transparent">
                     <div>
-                      <p className="text-sm font-bold">{getStudentName(reg)}</p>
-                      <p className="text-[10px] text-purple-400 font-mono mt-0.5">EXTERNAL OD</p>
+                      <p className="text-sm font-bold text-text-primary">{getStudentName(reg)}</p>
+                      <p className="text-[9px] text-purple-500 dark:text-purple-400 font-bold uppercase mt-1 tracking-wider">EXTERNAL OD</p>
                     </div>
-                    <div className="w-8 h-8 rounded-lg bg-purple-400/10 flex items-center justify-center text-purple-400">
-                      <Clock size={16} />
+                    <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-purple-500">
+                      <Clock size={15} />
                     </div>
                   </div>
                 ))}

@@ -89,46 +89,47 @@ const Timetable: React.FC = () => {
   const isToday = selectedDay === ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto pb-8 px-4">
+    <div className="space-y-6 max-w-lg mx-auto pb-8">
+      <h1 className="text-2xl font-black text-text-primary px-2 pt-2">Schedule</h1>
       {/* Live Status Cards */}
       <section className="grid grid-cols-2 gap-4">
-        <div className="bg-bg-card border border-border-color rounded-3xl p-5 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-12 h-12 bg-accent-blue/10 blur-xl rounded-full"></div>
+        <div className="neu-flat rounded-3xl p-5 relative overflow-hidden border border-border-color/10">
+          <div className="absolute top-0 right-0 w-12 h-12 bg-accent-blue/5 blur-xl rounded-full"></div>
           <div className="relative z-10 flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent-blue/10 flex items-center justify-center text-accent-blue">
-              <Zap size={20} />
+            <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-accent-blue">
+              <Zap size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest">Current</p>
-              <p className="text-sm font-bold truncate leading-tight">{currentPeriod}</p>
+              <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Current</p>
+              <p className="text-sm font-bold truncate leading-tight mt-1 text-text-primary">{currentPeriod}</p>
             </div>
           </div>
         </div>
-        <div className="bg-bg-card border border-border-color rounded-3xl p-5 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-12 h-12 bg-accent-purple/10 blur-xl rounded-full"></div>
+        <div className="neu-flat rounded-3xl p-5 relative overflow-hidden border border-border-color/10">
+          <div className="absolute top-0 right-0 w-12 h-12 bg-accent-purple/5 blur-xl rounded-full"></div>
           <div className="relative z-10 flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent-purple/10 flex items-center justify-center text-accent-purple">
-              <SkipForward size={20} />
+            <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-accent-purple">
+              <SkipForward size={18} />
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-text-secondary tracking-widest">Next</p>
-              <p className="text-sm font-bold truncate leading-tight">{nextPeriod}</p>
+              <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Next</p>
+              <p className="text-sm font-bold truncate leading-tight mt-1 text-text-primary">{nextPeriod}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Day Selector - Horizontal Scroll */}
-      <section className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar px-1">
+      <section className="flex items-center gap-3.5 overflow-x-auto pb-3.5 no-scrollbar px-1">
         {days.map((day) => (
           <button
             key={day}
             onClick={() => setSelectedDay(day)}
             className={clsx(
-              "px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 border",
+              "px-5 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border border-border-color/10",
               selectedDay === day 
-                ? "bg-accent-blue border-accent-blue text-white shadow-lg shadow-accent-blue/20" 
-                : "bg-bg-card border-border-color text-text-secondary"
+                ? "neu-inset text-accent-blue font-black" 
+                : "neu-flat text-text-secondary hover:text-text-primary"
             )}
           >
             {day}
@@ -139,7 +140,7 @@ const Timetable: React.FC = () => {
       {/* Schedule List with Global Progress Bar */}
       <div className="flex gap-4 items-stretch">
         {/* Whole Day Progress Bar */}
-        <div className="w-1.5 bg-bg-card border border-border-color rounded-full relative shrink-0 my-1">
+        <div className="w-1.5 neu-inset rounded-full relative shrink-0 my-1 border-0">
           {isToday && (
             <>
               <motion.div 
@@ -165,7 +166,7 @@ const Timetable: React.FC = () => {
               />
               {/* Extra Background Glow */}
               <motion.div 
-                className="absolute top-0 left-0 w-full bg-accent-blue/20 rounded-full blur-sm"
+                className="absolute top-0 left-0 w-full bg-accent-blue/25 rounded-full blur-sm"
                 initial={false}
                 animate={{ height: `${overallProgress}%` }}
                 transition={{ type: 'spring', stiffness: 50, damping: 20 }}
@@ -186,29 +187,29 @@ const Timetable: React.FC = () => {
                 transition={{ delay: idx * 0.05 }}
                 key={`${selectedDay}-${idx}`}
                 className={clsx(
-                  "flex items-center gap-4 p-4 rounded-2xl border transition-all shadow-sm",
+                  "flex items-center gap-4 p-4 rounded-2xl border transition-all",
                   isBreak 
-                    ? "bg-bg-secondary/30 border-dashed border-border-color/50 opacity-60" 
+                    ? "neu-flat opacity-60 border-dashed border-border-color/30" 
                     : isActive
-                      ? "bg-accent-blue/5 border-accent-blue ring-1 ring-accent-blue/50 shadow-md scale-[1.02]"
-                      : "bg-bg-card border-border-color hover:border-accent-blue/50"
+                      ? "neu-flat border-accent-blue/40 ring-1 ring-accent-blue/30 scale-[1.01]"
+                      : "neu-flat border-border-color/10 hover:border-accent-blue/30"
                 )}
               >
                 <div className="w-10 text-center shrink-0">
-                  <p className={clsx("text-xs font-black", isActive ? "text-accent-blue" : "text-accent-blue/60")}>{idx + 1}</p>
-                  <p className="text-[8px] uppercase font-bold text-text-secondary tracking-tighter">{timeSlots[idx].split('–')[0]}</p>
+                  <p className={clsx("text-xs font-black", isActive ? "text-accent-blue" : "text-accent-blue/70")}>{idx + 1}</p>
+                  <p className="text-[8px] uppercase font-bold text-text-secondary tracking-tight mt-0.5">{timeSlots[idx].split('–')[0]}</p>
                 </div>
                 
-                <div className={clsx("h-8 w-[1px]", isActive ? "bg-accent-blue/50" : "bg-border-color")}></div>
+                <div className={clsx("h-8 w-[1px]", isActive ? "bg-accent-blue/45" : "bg-text-secondary/20")}></div>
                 
-                <div className="flex-grow">
+                <div className="flex-grow min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className={clsx("text-sm font-bold leading-tight", isBreak && "italic")}>{subject}</p>
+                    <p className={clsx("text-sm font-bold leading-tight text-text-primary", isBreak && "italic text-text-secondary")}>{subject}</p>
                     {isActive && (
                       <span className="flex h-1.5 w-1.5 rounded-full bg-accent-blue animate-pulse"></span>
                     )}
                   </div>
-                  {!isBreak && <p className="text-[10px] text-text-secondary mt-0.5 font-medium">{timeSlots[idx]}</p>}
+                  {!isBreak && <p className="text-[9px] text-text-secondary mt-1 font-medium">{timeSlots[idx]}</p>}
                 </div>
               </motion.div>
             );
@@ -219,16 +220,16 @@ const Timetable: React.FC = () => {
       {/* Download Button */}
       <button 
         onClick={handleDownload}
-        className="w-full py-4 bg-bg-card border border-border-color rounded-3xl flex items-center justify-center gap-3 text-sm font-bold active:scale-[0.98] transition-all shadow-lg"
+        className="w-full py-4 neu-btn rounded-3xl flex items-center justify-center gap-3 text-sm font-bold active:scale-[0.98] transition-all border border-border-color/10 text-accent-blue"
       >
-        <Download size={18} className="text-accent-blue" />
+        <Download size={18} />
         Download Full View
       </button>
 
       {/* Tip */}
-      <div className="bg-bg-secondary/20 rounded-2xl p-4 flex items-start gap-3 border border-border-color/30">
-        <Info size={16} className="text-accent-blue shrink-0 mt-0.5" />
-        <p className="text-[10px] text-text-secondary leading-normal font-medium italic">
+      <div className="neu-inset rounded-2xl p-4 flex items-start gap-3 border border-border-color/5">
+        <Info size={15} className="text-accent-blue shrink-0 mt-0.5" />
+        <p className="text-[9px] text-text-secondary leading-normal font-medium italic">
           Schedule adapts to the current day automatically. Click any day to view its specific periods.
         </p>
       </div>

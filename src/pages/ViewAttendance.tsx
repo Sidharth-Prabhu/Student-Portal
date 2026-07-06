@@ -4,13 +4,14 @@ import {
   Search,
   ChevronRight,
   Share2,
-  Check
+  Check,
+  ChevronLeft
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 type Tab = 'absent' | 'od' | 'summary';
 
@@ -23,6 +24,7 @@ interface AttendanceRecord {
 }
 
 const ViewAttendance: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('summary');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
@@ -31,22 +33,18 @@ const ViewAttendance: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
 
-
-
   const fetchInitialDates = useCallback(async () => {
     try {
-      // Fetch all docs once to avoid complex orderBy/where indexing issues
-      // Since it's a semester's data, the document count is manageable (~100-200 docs)
       const q = query(collection(db, 'attendance'));
       const snap = await getDocs(q);
       
       if (!snap.empty) {
         const sortedIds = snap.docs.map(d => d.id).sort();
-        setFromDate(sortedIds[0]); // Least date
+        setFromDate(sortedIds[0]);
         
         const data = snap.docs
           .map(doc => ({ id: doc.id, ...doc.data() } as AttendanceRecord))
-          .sort((a, b) => b.id.localeCompare(a.id)); // Default desc
+          .sort((a, b) => b.id.localeCompare(a.id));
         
         setRecords(data);
       } else {
@@ -65,7 +63,6 @@ const ViewAttendance: React.FC = () => {
     fetchInitialDates();
   }, [fetchInitialDates]);
 
-  // Derived filtered records to avoid redundant Firestore calls
   const filteredRecords = React.useMemo(() => {
     return records.filter(doc => doc.id >= fromDate && doc.id <= toDate);
   }, [records, fromDate, toDate]);
@@ -83,7 +80,6 @@ const ViewAttendance: React.FC = () => {
       });
 
       const totalDays = filteredRecords.length;
-      // presentCount includes OD days
       const presentCount = totalDays - absentCount;
       const percentage = totalDays > 0 ? (presentCount / totalDays) * 100 : 100;
 
@@ -130,7 +126,7 @@ const ViewAttendance: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      alert("Native file sharing is not supported on this browser. The CSV file has been downloaded instead so you can send it manually.");
+      alert("Native file sharing is not supported on this browser. The CSV file has been downloaded instead.");
     };
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -155,50 +151,61 @@ const ViewAttendance: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto pb-8">
-      {/* Filters */}
-      <section className="bg-bg-card border border-border-color rounded-3xl p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Attendance Analytics</h1>
+      {/* Top Header Navigation */}
+      <div className="flex items-center justify-between px-2 pt-2">
+        <div className="flex items-center gap-4">
           <button 
-            onClick={exportCSV}
-            className="p-2 bg-accent-blue/10 text-accent-blue rounded-xl active:scale-95 transition-transform flex items-center justify-center shrink-0"
-            title="Share CSV on WhatsApp"
+            onClick={() => navigate(-1)} 
+            className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
           >
-            {copied ? <Check size={20} className="text-emerald-400" /> : <Share2 size={20} />}
+            <ChevronLeft size={18} />
           </button>
+          <h1 className="text-xl font-bold text-text-primary">Analytics</h1>
         </div>
+        <button 
+          onClick={exportCSV}
+          className="p-2.5 neu-btn rounded-xl flex items-center justify-center shrink-0 text-accent-blue"
+          title="Share CSV"
+        >
+          {copied ? <Check size={18} className="text-emerald-500" /> : <Share2 size={18} />}
+        </button>
+      </div>
 
+      {/* Filters */}
+      <section className="neu-flat rounded-3xl p-6 border border-border-color/10 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-text-secondary ml-1">From</label>
+            <label className="text-[9px] uppercase font-bold text-text-secondary ml-1 tracking-wider">From</label>
             <input 
               type="date" 
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-3 text-xs font-bold focus:outline-none"
+              className="w-full neu-input rounded-xl p-3 text-xs font-bold"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-text-secondary ml-1">To</label>
+            <label className="text-[9px] uppercase font-bold text-text-secondary ml-1 tracking-wider">To</label>
             <input 
               type="date" 
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="w-full bg-bg-secondary border border-border-color rounded-xl p-3 text-xs font-bold focus:outline-none"
+              className="w-full neu-input rounded-xl p-3 text-xs font-bold"
             />
           </div>
         </div>
       </section>
 
       {/* Tabs */}
-      <div className="flex p-1 bg-bg-card border border-border-color rounded-2xl shadow-lg">
+      <div className="flex p-1.5 neu-inset rounded-2xl">
         {(['summary', 'absent', 'od'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={clsx(
-              "flex-grow py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-              activeTab === tab ? "bg-accent-blue text-white shadow-lg shadow-accent-blue/20" : "text-text-secondary"
+              "flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer",
+              activeTab === tab 
+                ? "neu-flat text-accent-blue font-black" 
+                : "text-text-secondary hover:text-text-primary"
             )}
           >
             {tab === 'summary' ? 'Summary' : tab === 'absent' ? 'Absents' : 'ODs'}
@@ -216,16 +223,16 @@ const ViewAttendance: React.FC = () => {
           placeholder="Search students..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-bg-card border border-border-color rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-accent-blue transition-all shadow-lg"
+          className="w-full neu-input rounded-2xl py-4.5 pl-12 pr-4 text-sm"
         />
       </div>
 
       {/* Content */}
       <section className="space-y-3">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary">
-            <div className="w-10 h-10 border-4 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin"></div>
-            <p className="text-xs font-bold uppercase tracking-widest">Analyzing Records...</p>
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary neu-flat rounded-3xl border border-border-color/10">
+            <div className="w-8 h-8 border-4 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin"></div>
+            <p className="text-[10px] font-bold uppercase tracking-widest">Analyzing Records...</p>
           </div>
         ) : activeTab === 'summary' ? (
           summaryData.map((s, idx) => (
@@ -237,20 +244,20 @@ const ViewAttendance: React.FC = () => {
             >
               <Link
                 to={`/student/${s.regNum}`}
-                className="flex items-center gap-4 p-4 bg-bg-card border border-border-color rounded-2xl group active:scale-[0.98] transition-all shadow-sm"
+                className="flex items-center gap-4 p-4 neu-flat rounded-2xl group active:scale-[0.98] border border-border-color/10"
               >
                 <div className={clsx(
-                  "w-12 h-12 rounded-xl flex flex-col items-center justify-center font-black shadow-inner border",
-                  s.percentage < 75 ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                  "w-12 h-12 rounded-xl flex flex-col items-center justify-center font-black neu-inset shrink-0",
+                  s.percentage < 75 ? "text-red-500 dark:text-red-400" : "text-emerald-500 dark:text-emerald-400"
                 )}>
-                  <p className="text-xs leading-none">{s.percentage.toFixed(2)}</p>
-                  <p className="text-[8px]">%</p>
+                  <p className="text-xs leading-none">{s.percentage.toFixed(1)}</p>
+                  <p className="text-[8px] mt-0.5">%</p>
                 </div>
                 <div className="flex-grow min-w-0">
-                  <h3 className="font-bold text-sm truncate">{s.name}</h3>
+                  <h3 className="font-bold text-sm truncate text-text-primary">{s.name}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-[10px] text-text-secondary font-mono">Roll: {s.regNum.slice(-3)}</p>
-                    <span className="w-1 h-1 rounded-full bg-border-color"></span>
+                    <span className="w-1 h-1 rounded-full bg-text-secondary/30"></span>
                     <p className="text-[10px] text-text-secondary">{s.presentCount}/{s.totalDays} Days</p>
                   </div>
                 </div>
@@ -259,14 +266,14 @@ const ViewAttendance: React.FC = () => {
             </motion.div>
           ))
         ) : activeTab === 'absent' ? (
-          <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
+          <div className="neu-flat rounded-3xl overflow-hidden border border-border-color/10">
+            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-bg-secondary/50 border-b border-border-color">
-                    <th className="p-4 text-[10px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap">Student</th>
+                  <tr className="bg-bg-primary/55 border-b border-border-color/20">
+                    <th className="p-4 text-[9px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap">Student</th>
                     {filteredRecords.map(r => (
-                      <th key={r.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap text-center">
+                      <th key={r.id} className="p-4 text-[9px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap text-center">
                         {r.id.split('-').slice(1).join('/')}
                       </th>
                     ))}
@@ -274,10 +281,10 @@ const ViewAttendance: React.FC = () => {
                 </thead>
                 <tbody>
                   {students.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
-                    <tr key={s.regNum} className="border-b border-border-color/50 last:border-0 hover:bg-bg-secondary/20 transition-colors">
+                    <tr key={s.regNum} className="border-b border-border-color/10 last:border-0 hover:bg-bg-primary/20 transition-colors">
                       <td className="p-4 min-w-[140px]">
-                        <p className="text-xs font-bold truncate">{s.name}</p>
-                        <p className="text-[8px] text-text-secondary font-mono">{s.regNum}</p>
+                        <p className="text-xs font-bold truncate text-text-primary">{s.name}</p>
+                        <p className="text-[8px] text-text-secondary font-mono mt-0.5">{s.regNum}</p>
                       </td>
                       {filteredRecords.map(r => {
                         const isAbsent = r.absents?.includes(s.regNum);
@@ -285,7 +292,7 @@ const ViewAttendance: React.FC = () => {
                           <td key={r.id} className="p-4 text-center">
                             <span className={clsx(
                               "text-xs font-black",
-                              isAbsent ? "text-red-400" : "text-emerald-400"
+                              isAbsent ? "text-red-500 dark:text-red-400" : "text-emerald-500 dark:text-emerald-400"
                             )}>
                               {isAbsent ? 'A' : 'P'}
                             </span>
@@ -299,14 +306,14 @@ const ViewAttendance: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
+          <div className="neu-flat rounded-3xl overflow-hidden border border-border-color/10">
+            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-bg-secondary/50 border-b border-border-color">
-                    <th className="p-4 text-[10px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap">Student</th>
+                  <tr className="bg-bg-primary/55 border-b border-border-color/20">
+                    <th className="p-4 text-[9px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap">Student</th>
                     {filteredRecords.map(r => (
-                      <th key={r.id} className="p-4 text-[10px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap text-center">
+                      <th key={r.id} className="p-4 text-[9px] font-black uppercase tracking-widest text-text-secondary whitespace-nowrap text-center">
                         {r.id.split('-').slice(1).join('/')}
                       </th>
                     ))}
@@ -314,10 +321,10 @@ const ViewAttendance: React.FC = () => {
                 </thead>
                 <tbody>
                   {students.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
-                    <tr key={s.regNum} className="border-b border-border-color/50 last:border-0 hover:bg-bg-secondary/20 transition-colors">
+                    <tr key={s.regNum} className="border-b border-border-color/10 last:border-0 hover:bg-bg-primary/20 transition-colors">
                       <td className="p-4 min-w-[140px]">
-                        <p className="text-xs font-bold truncate">{s.name}</p>
-                        <p className="text-[8px] text-text-secondary font-mono">{s.regNum}</p>
+                        <p className="text-xs font-bold truncate text-text-primary">{s.name}</p>
+                        <p className="text-[8px] text-text-secondary font-mono mt-0.5">{s.regNum}</p>
                       </td>
                       {filteredRecords.map(r => {
                         const isIOD = r.internal_od?.includes(s.regNum);
@@ -326,7 +333,7 @@ const ViewAttendance: React.FC = () => {
                           <td key={r.id} className="p-4 text-center">
                             <span className={clsx(
                               "text-[10px] font-black",
-                              isIOD ? "text-blue-400" : isEOD ? "text-purple-400" : "text-text-secondary/20"
+                              isIOD ? "text-blue-500 dark:text-blue-400" : isEOD ? "text-purple-500 dark:text-purple-400" : "text-text-secondary/20"
                             )}>
                               {isIOD ? 'IOD' : isEOD ? 'EOD' : '—'}
                             </span>

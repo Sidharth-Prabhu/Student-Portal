@@ -12,9 +12,8 @@ import {
   Search
 } from 'lucide-react';
 import { db, secondaryAuth } from '../lib/firebase';
-import { collection, getDocs, orderBy, query, doc, setDoc /*, writeBatch */ } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-// import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
@@ -34,8 +33,6 @@ const DevConsole: React.FC = () => {
   const [todayVisits, setTodayVisits] = useState(0);
   const [activeTab, setActiveTab] = useState<'analytics' | 'add_admin'>('analytics');
   const navigate = useNavigate();
-  // const { user } = useAuth();
-  // const [isDeletingSeating, setIsDeletingSeating] = useState(false);
 
   // New Admin Form State
   const [password, setPassword] = useState('');
@@ -78,11 +75,9 @@ const DevConsole: React.FC = () => {
     try {
       const { email, regNum } = selectedStudent;
       
-      // 1. Create in Firebase Auth
       await createUserWithEmailAndPassword(secondaryAuth, email, password);
       await secondaryAuth.signOut();
       
-      // 2. Add to authorized_admins collection
       await setDoc(doc(db, 'authorized_admins', regNum), {
         email,
         regNum,
@@ -108,22 +103,29 @@ const DevConsole: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto pb-8">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate(-1)} className="p-2 bg-bg-card border border-border-color rounded-xl">
-          <ChevronLeft size={20} />
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft size={18} />
         </button>
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <Terminal className="text-red-400" /> 
+        <h1 className="text-xl font-bold flex items-center gap-2 text-text-primary">
+          <Terminal className="text-red-500" size={20} /> 
           Developer Console
         </h1>
       </div>
 
-      <div className="flex p-1 bg-bg-card border border-border-color rounded-2xl shadow-lg">
+      {/* Tabs */}
+      <div className="flex p-1.5 neu-inset rounded-2xl">
         <button
           onClick={() => setActiveTab('analytics')}
           className={clsx(
-            "flex-grow py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-            activeTab === 'analytics' ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-text-secondary"
+            "flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer",
+            activeTab === 'analytics' 
+              ? "neu-flat text-red-500 font-black" 
+              : "text-text-secondary hover:text-text-primary"
           )}
         >
           Analytics
@@ -131,8 +133,10 @@ const DevConsole: React.FC = () => {
         <button
           onClick={() => setActiveTab('add_admin')}
           className={clsx(
-            "flex-grow py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-            activeTab === 'add_admin' ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-text-secondary"
+            "flex-grow py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer",
+            activeTab === 'add_admin' 
+              ? "neu-flat text-red-500 font-black" 
+              : "text-text-secondary hover:text-text-primary"
           )}
         >
           Add Admin
@@ -145,19 +149,21 @@ const DevConsole: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <section className="bg-bg-card border border-border-color rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden text-center">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          {/* Overview Card */}
+          <section className="neu-flat rounded-3xl p-8 relative overflow-hidden text-center border border-border-color/10">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-3xl rounded-full"></div>
             <div className="relative z-10 flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 shadow-inner">
-                <Activity size={32} />
+              <div className="w-16 h-16 rounded-2xl neu-inset flex items-center justify-center text-red-500">
+                <Activity size={28} />
               </div>
               <div>
-                <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1">Today's Visits</p>
-                <h2 className="text-4xl font-black text-white">{isLoadingLogs ? '-' : todayVisits}</h2>
+                <p className="text-[9px] font-black text-text-secondary uppercase tracking-wider mb-1">Today's Visits</p>
+                <h2 className="text-4xl font-black text-text-primary">{isLoadingLogs ? '-' : todayVisits}</h2>
               </div>
             </div>
           </section>
 
+          {/* Log List */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
               <Users size={16} className="text-text-secondary" />
@@ -165,29 +171,29 @@ const DevConsole: React.FC = () => {
             </div>
 
             {isLoadingLogs ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <Loader2 className="animate-spin text-red-400" size={32} />
-                <p className="text-sm text-text-secondary">Loading visitor logs...</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-3 neu-flat rounded-3xl border border-border-color/10">
+                <Loader2 className="animate-spin text-red-500" size={28} />
+                <p className="text-xs text-text-secondary font-bold uppercase tracking-wider">Loading visitor logs...</p>
               </div>
             ) : (
-              <div className="bg-bg-card border border-border-color rounded-3xl overflow-hidden shadow-lg divide-y divide-border-color/50">
+              <div className="neu-flat rounded-3xl overflow-hidden divide-y divide-border-color/15 border border-border-color/10 shadow-lg">
                 {logs.length === 0 ? (
-                  <div className="p-8 text-center text-text-secondary">
-                    <p className="text-sm font-bold">No logs found.</p>
+                  <div className="p-8 text-center text-text-secondary bg-transparent">
+                    <p className="text-xs text-text-secondary">No logs found.</p>
                   </div>
                 ) : (
                   logs.map((log) => (
-                    <div key={log.id} className="p-4 flex flex-col gap-1">
+                    <div key={log.id} className="p-4 flex flex-col gap-1.5 bg-transparent">
                       <div className="flex items-center justify-between">
-                        <p className="font-bold text-sm truncate max-w-[200px]">{log.name || 'Unknown'}</p>
+                        <p className="font-bold text-sm text-text-primary truncate max-w-[200px]">{log.name || 'Unknown'}</p>
                         <span className={clsx(
                           "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border",
-                          log.lastAction === 'login_react' ? "bg-emerald-500/10 border-emerald-400/20 text-emerald-400" : "bg-blue-500/10 border-blue-400/20 text-blue-400"
+                          log.lastAction === 'login_react' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400" : "bg-blue-500/10 border-blue-500/20 text-blue-500 dark:text-blue-400"
                         )}>
                           {log.lastAction === 'login_react' ? 'LOGIN' : 'VISIT'}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[10px] text-text-secondary font-mono">
+                      <div className="flex items-center justify-between text-[10px] text-text-secondary font-mono mt-0.5">
                         <p>{log.reg}</p>
                         <p>{log.lastDate}</p>
                       </div>
@@ -204,29 +210,30 @@ const DevConsole: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <section className="bg-bg-card border border-border-color rounded-3xl p-6 shadow-xl">
+          {/* Authorize Faculty form card */}
+          <section className="neu-flat rounded-3xl p-6 border border-border-color/10">
             <div className="mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <UserPlus size={24} className="text-red-400" />
+              <h2 className="text-xl font-bold flex items-center gap-2 text-text-primary">
+                <UserPlus size={22} className="text-red-500" />
                 Authorize Faculty
               </h2>
-              <p className="text-xs text-text-secondary mt-1">Promote an existing student to Administrator. This will use their official college email.</p>
+              <p className="text-xs text-text-secondary mt-2.5 leading-relaxed">Promote an existing student to Administrator. This will use their official college email.</p>
             </div>
 
             <form onSubmit={handleCreateAdmin} className="space-y-6">
               {/* Student Search & Selection */}
               <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold text-text-secondary ml-1">Select Faculty/Student</label>
+                <label className="text-[9px] uppercase font-bold text-text-secondary ml-1 tracking-wider">Select Faculty/Student</label>
                 {selectedStudent ? (
-                  <div className="flex items-center justify-between p-4 bg-bg-secondary border border-accent-blue/30 rounded-xl">
+                  <div className="flex items-center justify-between p-4 neu-inset rounded-xl border border-accent-blue/20">
                     <div>
-                      <p className="text-sm font-bold">{selectedStudent.name}</p>
-                      <p className="text-[10px] text-text-secondary font-mono">{selectedStudent.regNum}</p>
+                      <p className="text-sm font-bold text-text-primary">{selectedStudent.name}</p>
+                      <p className="text-[10px] text-text-secondary font-mono mt-0.5">{selectedStudent.regNum}</p>
                     </div>
                     <button 
                       type="button"
                       onClick={() => setSelectedStudent(null)}
-                      className="p-2 text-text-secondary hover:text-red-400 transition-colors"
+                      className="p-2 text-text-secondary hover:text-red-500 transition-colors cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -240,11 +247,11 @@ const DevConsole: React.FC = () => {
                         value={studentSearch}
                         onChange={(e) => setStudentSearch(e.target.value)}
                         placeholder="Search by name or roll number..."
-                        className="w-full bg-bg-secondary border border-border-color rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-red-400 transition-all text-sm"
+                        className="w-full neu-input rounded-xl py-3.5 pl-11 pr-4 text-sm text-text-primary"
                       />
                     </div>
                     {studentSearch && (
-                      <div className="bg-bg-card border border-border-color rounded-xl overflow-hidden shadow-xl divide-y divide-border-color/50">
+                      <div className="neu-flat rounded-xl overflow-hidden divide-y divide-border-color/15 border border-border-color/10 mt-1 shadow-lg">
                         {filteredStudents.map(s => (
                           <button
                             key={s.regNum}
@@ -253,10 +260,10 @@ const DevConsole: React.FC = () => {
                               setSelectedStudent(s);
                               setStudentSearch('');
                             }}
-                            className="w-full p-3 text-left hover:bg-bg-secondary transition-colors flex flex-col"
+                            className="w-full p-3 text-left hover:bg-bg-primary/40 transition-colors flex flex-col cursor-pointer"
                           >
-                            <span className="text-sm font-bold">{s.name}</span>
-                            <span className="text-[10px] text-text-secondary font-mono">{s.regNum}</span>
+                            <span className="text-sm font-bold text-text-primary">{s.name}</span>
+                            <span className="text-[10px] text-text-secondary font-mono mt-0.5">{s.regNum}</span>
                           </button>
                         ))}
                       </div>
@@ -266,13 +273,13 @@ const DevConsole: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase font-bold text-text-secondary ml-1">Assign Admin Password</label>
+                <label className="text-[9px] uppercase font-bold text-text-secondary ml-1 tracking-wider">Assign Admin Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-bg-secondary border border-border-color rounded-xl py-3 px-4 focus:outline-none focus:border-red-400 transition-all text-sm"
+                  className="w-full neu-input rounded-xl py-3.5 px-4 text-sm text-text-primary"
                   required
                   minLength={6}
                 />
@@ -280,10 +287,10 @@ const DevConsole: React.FC = () => {
 
               {adminStatus && (
                 <div className={clsx(
-                  "p-3 rounded-xl flex items-center gap-2 text-xs font-bold",
-                  adminStatus.type === 'error' ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  "p-3 rounded-xl flex items-center gap-2 text-xs font-bold border",
+                  adminStatus.type === 'error' ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                 )}>
-                  {adminStatus.type === 'error' ? <AlertCircle size={16} /> : <Check size={16} />}
+                  {adminStatus.type === 'error' ? <AlertCircle size={16} className="shrink-0" /> : <Check size={16} className="shrink-0" />}
                   <p>{adminStatus.message}</p>
                 </div>
               )}
@@ -291,56 +298,15 @@ const DevConsole: React.FC = () => {
               <button
                 type="submit"
                 disabled={isCreatingAdmin || !selectedStudent}
-                className="w-full bg-gradient-to-r from-red-500 to-orange-600 text-white font-bold py-3.5 rounded-2xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+                className="w-full neu-btn text-red-500 font-bold py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm border border-border-color/10"
               >
-                {isCreatingAdmin ? <Loader2 className="animate-spin" size={18} /> : <UserPlus size={18} />}
+                {isCreatingAdmin ? <Loader2 className="animate-spin text-red-500 shrink-0" size={18} /> : <UserPlus size={18} className="shrink-0" />}
                 {isCreatingAdmin ? 'Processing...' : 'Grant Admin Access'}
               </button>
             </form>
           </section>
         </motion.div>
       )}
-
-      {/* Super Admin Tools - Commented out Seating Deletion
-      {user?.regNum === '2117240070308' && (
-        <motion.section 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-red-500/10 border border-red-500/30 rounded-3xl p-6 mt-6 shadow-xl space-y-4"
-        >
-          <div className="flex items-center gap-3 text-red-500 font-bold">
-            <AlertCircle size={24} />
-            <h2 className="text-lg">Super Admin Tools</h2>
-          </div>
-          <p className="text-xs text-text-secondary">Danger Zone: Operations here cannot be undone.</p>
-          <button
-            onClick={async () => {
-              if (!window.confirm("Are you sure you want to delete ALL seating allocations?")) return;
-              setIsDeletingSeating(true);
-              try {
-                const snap = await getDocs(collection(db, 'seating_allocations'));
-                const batch = writeBatch(db);
-                snap.docs.forEach((d) => {
-                  batch.delete(doc(db, 'seating_allocations', d.id));
-                });
-                await batch.commit();
-                alert("Seating allocations deleted successfully.");
-              } catch (e) {
-                console.error(e);
-                alert("Failed to delete.");
-              } finally {
-                setIsDeletingSeating(false);
-              }
-            }}
-            disabled={isDeletingSeating}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
-          >
-            {isDeletingSeating ? <Loader2 className="animate-spin" size={18} /> : <AlertCircle size={18} />}
-            {isDeletingSeating ? 'Deleting...' : 'Delete Seating Allocations'}
-          </button>
-        </motion.section>
-      )}
-      */}
     </div>
   );
 };

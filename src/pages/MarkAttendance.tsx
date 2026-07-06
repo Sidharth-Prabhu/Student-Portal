@@ -7,8 +7,10 @@ import {
   ShieldCheck,
   Briefcase,
   Calendar as CalendarIcon,
-  Copy
+  Copy,
+  ChevronLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { students } from '../data/students';
@@ -30,11 +32,11 @@ const StudentCard: React.FC<{
   const scaleRight = useTransform(x, [-50, -150], [0.8, 1.1]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-bg-secondary/20">
+    <div className="relative overflow-hidden rounded-2xl">
       <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
         <motion.div 
           style={{ opacity: opacityLeft, scale: scaleLeft }}
-          className="flex items-center gap-2 text-purple-400"
+          className="flex items-center gap-2 text-purple-500"
         >
           <ShieldCheck size={20} />
           <span className="text-[10px] font-black uppercase whitespace-nowrap">External OD</span>
@@ -42,7 +44,7 @@ const StudentCard: React.FC<{
         
         <motion.div 
           style={{ opacity: opacityRight, scale: scaleRight }}
-          className="flex items-center gap-2 text-blue-400"
+          className="flex items-center gap-2 text-blue-500"
         >
           <span className="text-[10px] font-black uppercase whitespace-nowrap">Internal OD</span>
           <Briefcase size={20} />
@@ -60,34 +62,34 @@ const StudentCard: React.FC<{
         transition={{ delay: idx * 0.01 }}
         onClick={() => onClick(s.regNum)}
         className={clsx(
-          "relative z-10 flex items-center gap-4 p-4 rounded-2xl border transition-all select-none touch-pan-y",
-          status === 'present' ? "bg-bg-card border-border-color" : 
-          status === 'absent' ? "bg-red-500/5 border-red-500/30" :
-          status === 'internal_od' ? "bg-blue-500/5 border-blue-500/30" :
-          "bg-purple-500/5 border-purple-500/30"
+          "relative z-10 flex items-center gap-4 p-4 rounded-2xl transition-all select-none touch-pan-y border cursor-pointer",
+          status === 'present' ? "neu-flat border-border-color/10" : 
+          status === 'absent' ? "neu-inset border-red-500/20 text-red-500" :
+          status === 'internal_od' ? "neu-inset border-blue-500/20 text-blue-500" :
+          "neu-inset border-purple-500/20 text-purple-500"
         )}
       >
         <div className={clsx(
-          "w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-inner border transition-colors",
-          status === 'present' ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400" : 
-          status === 'absent' ? "bg-red-400/20 text-red-400" :
-          status === 'internal_od' ? "bg-blue-400/20 text-blue-400" :
-          "bg-purple-400/20 text-purple-400"
+          "w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0 neu-inset transition-colors",
+          status === 'present' ? "text-emerald-500 dark:text-emerald-400" : 
+          status === 'absent' ? "text-red-500 dark:text-red-400" :
+          status === 'internal_od' ? "text-blue-500 dark:text-blue-400" :
+          "text-purple-500 dark:text-purple-400"
         )}>
           {status === 'present' ? <Check size={16} /> : s.name.charAt(0)}
         </div>
         
         <div className="flex-grow min-w-0">
-          <p className="font-bold text-sm truncate">{s.name}</p>
-          <p className="text-[10px] text-text-secondary font-mono tracking-tighter opacity-60">{s.regNum}</p>
+          <p className="font-bold text-sm truncate text-text-primary">{s.name}</p>
+          <p className="text-[10px] text-text-secondary font-mono tracking-tighter opacity-60 mt-0.5">{s.regNum}</p>
         </div>
 
         <div className={clsx(
-          "px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all",
-          status === 'present' ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400" : 
-          status === 'absent' ? "bg-red-400/10 border-red-400/20 text-red-400" :
-          status === 'internal_od' ? "bg-blue-400/10 border-blue-400/20 text-blue-400" :
-          "bg-purple-400/10 border-purple-400/20 text-purple-400"
+          "px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all",
+          status === 'present' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400" : 
+          status === 'absent' ? "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400" :
+          status === 'internal_od' ? "bg-blue-500/10 border-blue-500/20 text-blue-500 dark:text-blue-400" :
+          "bg-purple-500/10 border-purple-500/20 text-purple-500 dark:text-purple-400"
         )}>
           {status.replace('_', ' ')}
         </div>
@@ -97,6 +99,7 @@ const StudentCard: React.FC<{
 };
 
 const MarkAttendance: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -228,7 +231,6 @@ const MarkAttendance: React.FC = () => {
         external_od
       });
 
-      // Format report
       const [year, month, dayStr] = selectedDate.split('-');
       const dateObj = new Date(Number(year), Number(month) - 1, Number(dayStr));
       const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
@@ -275,7 +277,6 @@ const MarkAttendance: React.FC = () => {
     }
   };
 
-
   const stats = useMemo(() => ({
     present: Object.values(attendance).filter(s => s === 'present').length,
     absent: Object.values(attendance).filter(s => s === 'absent').length,
@@ -290,18 +291,29 @@ const MarkAttendance: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto pb-32 px-4 sm:px-0">
-      {/* Header */}
-      <section className="bg-bg-card border border-border-color rounded-[2.5rem] p-6 shadow-xl relative overflow-hidden">
+      {/* Top Header Navigation */}
+      <div className="flex items-center gap-4 px-2 pt-2">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <h1 className="text-xl font-bold text-text-primary">Mark Attendance</h1>
+      </div>
+
+      {/* Header Info Panel */}
+      <section className="neu-flat rounded-3xl p-6 relative overflow-hidden border border-border-color/10">
         <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10">
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl font-black">Attendance Records</h1>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">Active</span>
+              <span className="text-[9px] font-black uppercase text-text-secondary tracking-wider">Configure Session</span>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-inner animate-pulse">Active</span>
             </div>
             <div className="flex gap-2">
               <div 
-                className="flex items-center gap-3 bg-bg-secondary p-3 rounded-2xl border border-border-color cursor-pointer active:bg-bg-secondary/80 grow"
+                className="flex items-center gap-3 neu-inset p-3 rounded-2xl cursor-pointer grow"
                 onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
                   if (input instanceof HTMLInputElement) {
@@ -324,35 +336,35 @@ const MarkAttendance: React.FC = () => {
                   value={selectedDate}
                   max={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-transparent text-sm font-bold focus:outline-none grow color-scheme-dark cursor-pointer"
+                  className="bg-transparent text-sm font-bold focus:outline-none grow color-scheme-dark cursor-pointer text-text-primary"
                 />
               </div>
               <button
                 onClick={handleCopyReport}
-                className="p-3 bg-bg-secondary hover:bg-accent-blue/10 text-text-secondary hover:text-accent-blue rounded-2xl border border-border-color active:scale-95 transition-all flex items-center justify-center shrink-0"
+                className="p-3.5 neu-btn text-accent-blue rounded-2xl active:scale-95 transition-all flex items-center justify-center shrink-0"
                 title="Copy WhatsApp Report"
               >
-                {copied ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
+                {copied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-2">
-            <div className="bg-bg-secondary/50 p-3 rounded-2xl border border-border-color text-center">
+            <div className="neu-inset p-3 rounded-2xl text-center">
               <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">Present</p>
-              <p className="text-lg font-black text-emerald-400">{stats.present}</p>
+              <p className="text-lg font-black text-emerald-500 dark:text-emerald-400 mt-1">{stats.present}</p>
             </div>
-            <div className="bg-bg-secondary/50 p-3 rounded-2xl border border-border-color text-center">
+            <div className="neu-inset p-3 rounded-2xl text-center">
               <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">Absent</p>
-              <p className="text-lg font-black text-red-400">{stats.absent}</p>
+              <p className="text-lg font-black text-red-500 dark:text-red-400 mt-1">{stats.absent}</p>
             </div>
-            <div className="bg-bg-secondary/50 p-3 rounded-2xl border border-border-color text-center">
+            <div className="neu-inset p-3 rounded-2xl text-center">
               <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">I-OD</p>
-              <p className="text-lg font-black text-blue-400">{stats.iod}</p>
+              <p className="text-lg font-black text-blue-500 dark:text-blue-400 mt-1">{stats.iod}</p>
             </div>
-            <div className="bg-bg-secondary/50 p-3 rounded-2xl border border-border-color text-center">
+            <div className="neu-inset p-3 rounded-2xl text-center">
               <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">E-OD</p>
-              <p className="text-lg font-black text-purple-400">{stats.eod}</p>
+              <p className="text-lg font-black text-purple-500 dark:text-purple-400 mt-1">{stats.eod}</p>
             </div>
           </div>
         </div>
@@ -360,7 +372,7 @@ const MarkAttendance: React.FC = () => {
 
       {/* Search */}
       <div className="relative group">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary group-focus-within:text-accent-blue transition-colors">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary transition-colors">
           <Search size={18} />
         </div>
         <input 
@@ -368,25 +380,25 @@ const MarkAttendance: React.FC = () => {
           placeholder="Search name or roll number..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-bg-card border border-border-color rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-accent-blue transition-all shadow-lg"
+          className="w-full neu-input rounded-2xl py-4.5 pl-12 pr-4 text-sm"
         />
       </div>
 
       {/* Student List */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-2 mb-1">
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest flex items-center gap-2">
+          <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">
             Viewing records for {selectedDate}
           </p>
-          <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">
+          <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">
             {filteredStudents.length} Students
           </p>
         </div>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary">
-            <Loader2 className="animate-spin text-accent-blue" size={32} />
-            <p className="text-xs font-bold uppercase tracking-widest">Syncing Roster...</p>
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary neu-flat rounded-3xl border border-border-color/10">
+            <Loader2 className="animate-spin text-accent-blue" size={28} />
+            <p className="text-[10px] font-bold uppercase tracking-widest">Syncing Roster...</p>
           </div>
         ) : (
           filteredStudents.map((s, idx) => (
@@ -403,20 +415,20 @@ const MarkAttendance: React.FC = () => {
       </section>
 
       {/* Floating Action Bar */}
-      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
+      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
         <button 
           onClick={saveAttendance}
           disabled={isSaving}
-          className="w-full bg-accent-blue hover:bg-accent-blue/90 disabled:bg-bg-card/85 text-white disabled:text-text-secondary font-black py-5 rounded-[2rem] shadow-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all text-base cursor-pointer disabled:cursor-not-allowed border border-border-color/10"
+          className="w-full neu-btn text-accent-blue font-black py-4.5 rounded-2xl shadow-2xl flex items-center justify-center gap-3 disabled:opacity-50 text-base border border-border-color/10"
         >
           {isSaving ? (
             <>
-              <Loader2 className="animate-spin text-white" size={24} />
+              <Loader2 className="animate-spin text-accent-blue shrink-0" size={20} />
               Saving Attendance...
             </>
           ) : (
             <>
-              <Check size={24} className="text-white" />
+              <Check size={20} className="text-accent-blue shrink-0" />
               Save Attendance
             </>
           )}

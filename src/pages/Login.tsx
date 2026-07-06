@@ -42,29 +42,29 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-bg-card border border-border-color rounded-2xl p-8 shadow-2xl"
+        className="w-full max-w-md neu-flat rounded-2xl p-8"
       >
         <div className="text-center mb-8">
           <motion.div
             initial={{ y: -20 }}
             animate={{ y: 0 }}
-            className="w-16 h-16 bg-gradient-to-br from-accent-blue to-accent-purple rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+            className="w-16 h-16 neu-flat rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border-color/10"
           >
-            <LogIn className="text-white" size={32} />
+            <LogIn className="text-accent-blue" size={28} />
           </motion.div>
           <h1 className="text-3xl font-bold gradient-text">Student Portal</h1>
-          <p className="text-text-secondary mt-2">Enter your registration number to continue</p>
+          <p className="text-text-secondary mt-2 text-sm">Enter your registration number to continue</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label htmlFor="reg" className="text-sm font-medium text-text-secondary block">
+            <label htmlFor="reg" className="text-xs font-bold text-text-secondary block uppercase tracking-wider">
               Registration Number
             </label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary">
                 <Hash size={18} />
               </div>
               <input
@@ -74,17 +74,16 @@ const Login: React.FC = () => {
                 onChange={(e) => setReg(e.target.value)}
                 placeholder="2117240070XXX"
                 maxLength={13}
-                className="w-full bg-bg-secondary border border-border-color rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:border-accent-blue focus:ring-1 focus:ring-accent-blue transition-all"
+                className="w-full neu-input rounded-xl py-3.5 pl-11 pr-4 text-text-primary placeholder:text-text-secondary/40 focus:outline-none transition-all font-mono"
               />
             </div>
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-accent-blue to-accent-purple text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-accent-blue/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full neu-btn text-accent-blue font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
           </motion.button>
@@ -96,13 +95,13 @@ const Login: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm"
           >
-            <AlertCircle size={18} />
-            <p>{error}</p>
+            <AlertCircle size={18} className="shrink-0" />
+            <p className="font-medium">{error}</p>
           </motion.div>
         )}
 
         <div className="mt-8 text-center">
-          <p className="text-xs text-text-secondary">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-text-secondary/60">
             AI & DS Department • Frissco Creative Labs
           </p>
         </div>
