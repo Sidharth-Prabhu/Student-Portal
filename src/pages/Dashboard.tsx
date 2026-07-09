@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
           </button>
 
           {/* Logout */}
-          <button 
+          <button
             onClick={handleLogout}
             className="p-2.5 neu-btn text-text-secondary hover:text-red-500 flex items-center justify-center cursor-pointer"
             title="Sign Out"
@@ -231,7 +231,7 @@ const Dashboard: React.FC = () => {
           <div>
             <p className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">Official Credentials</p>
             <h2 className="text-base font-bold text-text-primary mt-1.5">
-              AI & DS • Semester 04 • Section E
+              AI & DS • Semester 05 • Section E
             </h2>
             <p className="text-[10px] text-text-secondary/80 mt-1 font-mono">{user?.regNum}</p>
           </div>
