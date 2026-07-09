@@ -15,6 +15,7 @@ import Summary from './pages/Summary';
 import DatabaseManager from './pages/DatabaseManager';
 import StudentDetails from './pages/StudentDetails';
 import DevConsole from './pages/DevConsole';
+import FacultyDashboard from './pages/FacultyDashboard';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -58,6 +59,20 @@ const DevRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const FacultyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isFaculty, isLoading } = useAuth();
+  
+  if (isLoading) return (
+    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+    </div>
+  );
+  
+  if (!isFaculty) return <Navigate to="/login" replace />;
+  
+  return <>{children}</>;
+};
+
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
@@ -82,6 +97,9 @@ function App() {
             <Route path="/view-attendance" element={<AdminRoute><ViewAttendance /></AdminRoute>} />
             <Route path="/summary" element={<AdminRoute><Summary /></AdminRoute>} />
             <Route path="/database-manager" element={<AdminRoute><DatabaseManager /></AdminRoute>} />
+
+            {/* Faculty Features */}
+            <Route path="/faculty" element={<FacultyRoute><FacultyDashboard /></FacultyRoute>} />
 
             {/* Dev Only Features */}
             <Route path="/dev-console" element={<DevRoute><DevConsole /></DevRoute>} />

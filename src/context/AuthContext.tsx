@@ -2,9 +2,9 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import type { Student } from '../data/students';
 import { students } from '../data/students';
 import { auth, db } from '../lib/firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
   signOut,
   type User
 } from 'firebase/auth';
@@ -15,8 +15,10 @@ interface AuthContextType {
   isAdmin: boolean;
   isDev: boolean;
   isEligibleForAdmin: boolean;
+  isFaculty: boolean;
   firebaseUser: User | null;
   login: (regNum: string) => Promise<void>;
+  facultyLogin: (passcode: string) => Promise<void>;
   adminLogin: (regNum: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
@@ -32,6 +34,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEligibleForAdmin, setIsEligibleForAdmin] = useState(false);
+  const [isFaculty, setIsFaculty] = useState(() => {
+    return localStorage.getItem('faculty_session') === 'true';
+  });
 
   const checkEligibility = useCallback(async (regNum: string) => {
     if (regNum === '2117240070308') {
@@ -87,8 +92,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error("Student not found with this register number");
     }
     setUser(student);
+    setIsFaculty(false);
+    localStorage.removeItem('faculty_session');
     localStorage.setItem('student_session', JSON.stringify(student));
     await logVisit(student, true);
+  };
+
+  const facultyLogin = async (passcode: string) => {
+    if (passcode === 'FacultyPass2026') {
+      setIsFaculty(true);
+      setUser(null);
+      localStorage.setItem('faculty_session', 'true');
+      localStorage.removeItem('student_session');
+    } else {
+      throw new Error('Invalid faculty passcode');
+    }
   };
 
   const adminLogin = async (regNum: string, password: string) => {
@@ -114,20 +132,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signOut(auth);
     setUser(null);
     setFirebaseUser(null);
+    setIsFaculty(false);
     localStorage.removeItem('student_session');
+    localStorage.removeItem('faculty_session');
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAdmin: !!firebaseUser, 
+    <AuthContext.Provider value={{
+      user,
+      isAdmin: !!firebaseUser,
       isDev: !!firebaseUser && user?.regNum === '2117240070308',
       isEligibleForAdmin,
-      firebaseUser, 
-      login, 
-      adminLogin, 
-      logout, 
-      isLoading 
+      isFaculty,
+      firebaseUser,
+      login,
+      facultyLogin,
+      adminLogin,
+      logout,
+      isLoading
     }}>
       {children}
     </AuthContext.Provider>
