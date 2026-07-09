@@ -63,7 +63,7 @@ const Summary: React.FC = () => {
     const absentCount = absentStudents.length;
     const presentCount = totalStrength - absentCount;
 
-    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}\n _Check your attendance percentage from_ bit.ly/3Tb4ZSJ`;
 
     const openWhatsApp = () => {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;

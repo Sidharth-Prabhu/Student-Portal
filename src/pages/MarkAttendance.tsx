@@ -142,7 +142,7 @@ const MarkAttendance: React.FC = () => {
     const absentCount = absentList.length;
     const presentCount = totalStrength - absentCount;
 
-    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+    const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}\n _Check your attendance percentage from_ bit.ly/3Tb4ZSJ`;
 
     const openWhatsApp = () => {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
@@ -245,7 +245,7 @@ const MarkAttendance: React.FC = () => {
       const absentCount = absentList.length;
       const presentCount = totalStrength - absentCount;
 
-      const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}\n _Check your attendance percentage from https://bit.ly/3Tb4ZSJ_`;
+      const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}\n _Check your attendance percentage from_ bit.ly/3Tb4ZSJ`;
 
       const openWhatsApp = () => {
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
