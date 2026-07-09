@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, type PanInfo, useMotionValue, useTransform } from 'framer-motion';
-import { 
-  Check, 
+import {
+  Check,
   Loader2,
   Search,
   ShieldCheck,
@@ -26,23 +26,23 @@ const StudentCard: React.FC<{
   onClick: (regNum: string) => void;
 }> = ({ s, idx, status, onSwipe, onClick }) => {
   const x = useMotionValue(0);
-  const opacityLeft = useTransform(x, [50, 100], [0, 1]); 
-  const opacityRight = useTransform(x, [-50, -100], [0, 1]); 
+  const opacityLeft = useTransform(x, [50, 100], [0, 1]);
+  const opacityRight = useTransform(x, [-50, -100], [0, 1]);
   const scaleLeft = useTransform(x, [50, 150], [0.8, 1.1]);
   const scaleRight = useTransform(x, [-50, -150], [0.8, 1.1]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
       <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none">
-        <motion.div 
+        <motion.div
           style={{ opacity: opacityLeft, scale: scaleLeft }}
           className="flex items-center gap-2 text-purple-500"
         >
           <ShieldCheck size={20} />
           <span className="text-[10px] font-black uppercase whitespace-nowrap">External OD</span>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           style={{ opacity: opacityRight, scale: scaleRight }}
           className="flex items-center gap-2 text-blue-500"
         >
@@ -63,22 +63,22 @@ const StudentCard: React.FC<{
         onClick={() => onClick(s.regNum)}
         className={clsx(
           "relative z-10 flex items-center gap-4 p-4 rounded-2xl transition-all select-none touch-pan-y border cursor-pointer",
-          status === 'present' ? "neu-flat border-border-color/10" : 
-          status === 'absent' ? "neu-inset border-red-500/20 text-red-500" :
-          status === 'internal_od' ? "neu-inset border-blue-500/20 text-blue-500" :
-          "neu-inset border-purple-500/20 text-purple-500"
+          status === 'present' ? "neu-flat border-border-color/10" :
+            status === 'absent' ? "neu-inset border-red-500/20 text-red-500" :
+              status === 'internal_od' ? "neu-inset border-blue-500/20 text-blue-500" :
+                "neu-inset border-purple-500/20 text-purple-500"
         )}
       >
         <div className={clsx(
           "w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs shrink-0 neu-inset transition-colors",
-          status === 'present' ? "text-emerald-500 dark:text-emerald-400" : 
-          status === 'absent' ? "text-red-500 dark:text-red-400" :
-          status === 'internal_od' ? "text-blue-500 dark:text-blue-400" :
-          "text-purple-500 dark:text-purple-400"
+          status === 'present' ? "text-emerald-500 dark:text-emerald-400" :
+            status === 'absent' ? "text-red-500 dark:text-red-400" :
+              status === 'internal_od' ? "text-blue-500 dark:text-blue-400" :
+                "text-purple-500 dark:text-purple-400"
         )}>
           {status === 'present' ? <Check size={16} /> : s.name.charAt(0)}
         </div>
-        
+
         <div className="flex-grow min-w-0">
           <p className="font-bold text-sm truncate text-text-primary">{s.name}</p>
           <p className="text-[10px] text-text-secondary font-mono tracking-tighter opacity-60 mt-0.5">{s.regNum}</p>
@@ -86,10 +86,10 @@ const StudentCard: React.FC<{
 
         <div className={clsx(
           "px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all",
-          status === 'present' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400" : 
-          status === 'absent' ? "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400" :
-          status === 'internal_od' ? "bg-blue-500/10 border-blue-500/20 text-blue-500 dark:text-blue-400" :
-          "bg-purple-500/10 border-purple-500/20 text-purple-500 dark:text-purple-400"
+          status === 'present' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500 dark:text-emerald-400" :
+            status === 'absent' ? "bg-red-500/10 border-red-500/20 text-red-500 dark:text-red-400" :
+              status === 'internal_od' ? "bg-blue-500/10 border-blue-500/20 text-blue-500 dark:text-blue-400" :
+                "bg-purple-500/10 border-purple-500/20 text-purple-500 dark:text-purple-400"
         )}>
           {status.replace('_', ' ')}
         </div>
@@ -132,18 +132,18 @@ const MarkAttendance: React.FC = () => {
     const dateObj = new Date(Number(year), Number(month) - 1, Number(dayStr));
     const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
     const formattedDate = `${dayStr.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
-    
+
     const absentList = students.filter(s => attendance[s.regNum] === 'absent');
     const absentText = absentList.length > 0
       ? absentList.map(s => s.regNum.slice(-3)).join(', ')
       : 'Nil';
-      
+
     const totalStrength = students.length;
     const absentCount = absentList.length;
     const presentCount = totalStrength - absentCount;
-    
+
     const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
-    
+
     const openWhatsApp = () => {
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
       const newWindow = window.open(whatsappUrl, '_blank');
@@ -172,7 +172,7 @@ const MarkAttendance: React.FC = () => {
     try {
       const docRef = doc(db, 'attendance', selectedDate);
       const docSnap = await getDoc(docRef);
-      
+
       const newAttendance: Record<string, AttendanceStatus> = {};
       students.forEach(s => newAttendance[s.regNum] = 'present');
 
@@ -235,17 +235,17 @@ const MarkAttendance: React.FC = () => {
       const dateObj = new Date(Number(year), Number(month) - 1, Number(dayStr));
       const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
       const formattedDate = `${dayStr.padStart(2, '0')}-${month.padStart(2, '0')}-${year}`;
-      
+
       const absentList = students.filter(s => attendance[s.regNum] === 'absent');
       const absentText = absentList.length > 0
         ? absentList.map(s => s.regNum.slice(-3)).join(', ')
         : 'Nil';
-        
+
       const totalStrength = students.length;
       const absentCount = absentList.length;
       const presentCount = totalStrength - absentCount;
-      
-      const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}`;
+
+      const report = `AIDS E III year\nDate: ${formattedDate}\nDay: ${dayName}\nPresent count : ${presentCount}\nAbsent count: ${absentCount}\nTotal strength : ${totalStrength}\nAbsentees:\n${absentText}\n_Check your attendance percentage from https://bit.ly/3Tb4ZSJ_`;
 
       const openWhatsApp = () => {
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`;
@@ -284,8 +284,8 @@ const MarkAttendance: React.FC = () => {
     eod: Object.values(attendance).filter(s => s === 'external_od').length,
   }), [attendance]);
 
-  const filteredStudents = students.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.regNum.includes(searchQuery)
   );
 
@@ -293,8 +293,8 @@ const MarkAttendance: React.FC = () => {
     <div className="space-y-6 max-w-lg mx-auto pb-32 px-4 sm:px-0">
       {/* Top Header Navigation */}
       <div className="flex items-center gap-4 px-2 pt-2">
-        <button 
-          onClick={() => navigate(-1)} 
+        <button
+          onClick={() => navigate(-1)}
           className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
         >
           <ChevronLeft size={18} />
@@ -312,7 +312,7 @@ const MarkAttendance: React.FC = () => {
               <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 shadow-inner animate-pulse">Active</span>
             </div>
             <div className="flex gap-2">
-              <div 
+              <div
                 className="flex items-center gap-3 neu-inset p-3 rounded-2xl cursor-pointer grow"
                 onClick={(e) => {
                   const input = e.currentTarget.querySelector('input');
@@ -331,8 +331,8 @@ const MarkAttendance: React.FC = () => {
                 }}
               >
                 <CalendarIcon size={18} className="text-accent-blue" />
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={selectedDate}
                   max={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setSelectedDate(e.target.value)}
@@ -375,7 +375,7 @@ const MarkAttendance: React.FC = () => {
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary transition-colors">
           <Search size={18} />
         </div>
-        <input 
+        <input
           type="text"
           placeholder="Search name or roll number..."
           value={searchQuery}
@@ -402,7 +402,7 @@ const MarkAttendance: React.FC = () => {
           </div>
         ) : (
           filteredStudents.map((s, idx) => (
-            <StudentCard 
+            <StudentCard
               key={s.regNum}
               s={s}
               idx={idx}
@@ -416,7 +416,7 @@ const MarkAttendance: React.FC = () => {
 
       {/* Floating Action Bar */}
       <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md px-4 z-50">
-        <button 
+        <button
           onClick={saveAttendance}
           disabled={isSaving}
           className="w-full neu-btn text-accent-blue font-black py-4.5 rounded-2xl shadow-2xl flex items-center justify-center gap-3 disabled:opacity-50 text-base border border-border-color/10"
