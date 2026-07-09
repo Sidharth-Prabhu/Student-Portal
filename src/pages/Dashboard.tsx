@@ -21,11 +21,13 @@ import {
   Bell,
   LogOut,
   Sun,
-  Moon
+  Moon,
+  SkipForward
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { clsx } from 'clsx';
+import { useCurrentPeriods } from '../hooks/useCurrentPeriods';
 
 const adminActions = [
   {
@@ -86,10 +88,11 @@ const Dashboard: React.FC = () => {
   const { user, isAdmin, isDev, isEligibleForAdmin, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { currentPeriod, nextPeriod } = useCurrentPeriods();
 
   const [displayCgpa, setDisplayCgpa] = useState<string | null>(null);
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
-  const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, color: string } | null>(null);
+  const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, percentage: number | null, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
 
   const visibleActions = isDev ? [
@@ -138,7 +141,7 @@ const Dashboard: React.FC = () => {
           const total = docs.length;
 
           if (total === 0) {
-            setAttendanceStatus({ label: 'N/A', color: 'text-text-secondary' });
+            setAttendanceStatus({ label: 'N/A', percentage: null, color: 'text-text-secondary' });
             return;
           }
 
@@ -161,10 +164,10 @@ const Dashboard: React.FC = () => {
           else if (percentage >= 65) { label = 'Warning'; color = 'text-yellow-400'; }
           else { label = 'Critical'; color = 'text-red-400'; }
 
-          setAttendanceStatus({ label, color });
+          setAttendanceStatus({ label, percentage, color });
         } catch (e) {
           console.error("Attendance fetch error", e);
-          setAttendanceStatus({ label: 'Error', color: 'text-red-400' });
+          setAttendanceStatus({ label: 'Error', percentage: null, color: 'text-red-400' });
         } finally {
           setIsLoadingAttendance(false);
         }
@@ -177,7 +180,7 @@ const Dashboard: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto pb-8">
+    <div className="space-y-6 max-w-lg md:max-w-5xl mx-auto pb-8">
       {/* Student Profile Greeting & Actions Header */}
       <section className="flex items-center justify-between px-2 pt-2 gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -224,136 +227,188 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* Welcome Banner / Academic Details */}
-      <section className="relative overflow-hidden rounded-3xl neu-flat p-6 border border-border-color/10">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full"></div>
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <p className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">Official Credentials</p>
-            <h2 className="text-base font-bold text-text-primary mt-1.5">
-              AI & DS • Semester 05 • Section E
-            </h2>
-            <p className="text-[10px] text-text-secondary/80 mt-1 font-mono">{user?.regNum}</p>
-          </div>
-          {isAdmin && (
-            <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-orange-500 shrink-0">
-              <ShieldCheck size={20} />
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Quick Stats Grid */}
-      <section className="grid grid-cols-2 gap-4">
-        <Link to="/attendance" className="neu-flat-hover p-4 rounded-2xl flex flex-col gap-3 block text-left">
-          <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-emerald-400">
-            <TrendingUp size={16} />
-          </div>
-          <div>
-            <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Attendance</p>
-            {isLoadingAttendance ? (
-              <div className="h-6 w-16 bg-bg-secondary animate-pulse rounded mt-1"></div>
-            ) : (
-              <p className={clsx("text-lg font-bold mt-1", attendanceStatus?.color)}>{attendanceStatus?.label}</p>
-            )}
-          </div>
-        </Link>
-
-        {isLoadingCgpa ? (
-          <div className="neu-flat p-4 rounded-2xl flex flex-col gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-lg bg-bg-secondary"></div>
-            <div className="h-2 w-12 bg-bg-secondary rounded"></div>
-            <div className="h-4 w-16 bg-bg-secondary rounded"></div>
-          </div>
-        ) : (
-          <Link to="/cgpa" className="neu-flat-hover p-4 rounded-2xl flex flex-col gap-3 block text-left">
-            <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-accent-purple">
-              <Award size={16} />
-            </div>
-            <div>
-              <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Current CGPA</p>
-              <p className={clsx("font-bold text-text-primary mt-1", displayCgpa ? "text-lg" : "text-xs")}>
-                {displayCgpa || 'Calculate Now!'}
-              </p>
-            </div>
-          </Link>
-        )}
-      </section>
-
-      {/* Quick Navigation Cards */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2">Quick Navigation</h2>
-        <div className="grid grid-cols-3 gap-4">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="neu-flat-hover p-4 rounded-2xl flex flex-col items-center gap-3 block"
-            >
-              <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", link.color)}>
-                <link.icon size={18} className={link.iconColor} />
+      {/* Desktop Responsive Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        {/* Left Column */}
+        <div className="md:col-span-7 space-y-6">
+          {/* Welcome Banner / Academic Details */}
+          <section className="relative overflow-hidden rounded-3xl neu-flat p-6 border border-border-color/10">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent-blue/5 blur-3xl rounded-full"></div>
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <p className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">Official Credentials</p>
+                <h2 className="text-base font-bold text-text-primary mt-1.5">
+                  AI & DS • Semester 05 • Section E
+                </h2>
+                <p className="text-[10px] text-text-secondary/80 mt-1 font-mono">{user?.regNum}</p>
               </div>
-              <p className="text-[10px] font-bold text-center leading-tight">{link.title}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Admin Actions or Login */}
-      {isEligibleForAdmin && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">
-              {isAdmin ? 'Admin Console' : 'Faculty Access'}
-            </h2>
-          </div>
-
-          {isAdmin ? (
-            <div className="grid grid-cols-2 gap-4">
-              {visibleActions.map((action, idx) => (
-                <motion.div
-                  key={action.title}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="h-full"
-                >
-                  <Link
-                    to={action.path}
-                    className="flex flex-col gap-4 p-5 neu-flat-hover rounded-3xl h-full text-left"
-                  >
-                    <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center shrink-0">
-                      <action.icon size={22} className={action.iconColor} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm leading-tight text-text-primary">{action.title}</h3>
-                      <p className="text-[10px] text-text-secondary mt-1">{action.desc}</p>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+              {isAdmin && (
+                <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-orange-500 shrink-0">
+                  <ShieldCheck size={20} />
+                </div>
+              )}
             </div>
-          ) : (
-            <Link
-              to="/admin-login"
-              className="flex items-center justify-between p-6 neu-flat-hover rounded-3xl"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-text-secondary">
-                  <Lock size={22} />
+          </section>
+
+          {/* Quick Stats Grid */}
+          <section className="grid grid-cols-2 gap-4">
+            <Link to="/attendance" className="neu-flat-hover p-4 rounded-2xl flex flex-col gap-3 block text-left">
+              <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-emerald-400">
+                <TrendingUp size={16} />
+              </div>
+              <div>
+                <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Attendance</p>
+                {isLoadingAttendance ? (
+                  <div className="h-6 w-16 bg-bg-secondary animate-pulse rounded mt-1"></div>
+                ) : (
+                  <p className={clsx("text-lg font-bold mt-1", attendanceStatus?.color)}>
+                    {attendanceStatus?.percentage !== null && attendanceStatus?.percentage !== undefined
+                      ? `${attendanceStatus.percentage.toFixed(1)}% • ${attendanceStatus.label}`
+                      : attendanceStatus?.label}
+                  </p>
+                )}
+              </div>
+            </Link>
+
+            {isLoadingCgpa ? (
+              <div className="neu-flat p-4 rounded-2xl flex flex-col gap-3 animate-pulse">
+                <div className="w-8 h-8 rounded-lg bg-bg-secondary"></div>
+                <div className="h-2 w-12 bg-bg-secondary rounded"></div>
+                <div className="h-4 w-16 bg-bg-secondary rounded"></div>
+              </div>
+            ) : (
+              <Link to="/cgpa" className="neu-flat-hover p-4 rounded-2xl flex flex-col gap-3 block text-left">
+                <div className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center text-accent-purple">
+                  <Award size={16} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-text-primary">Login as Administrator</h3>
-                  <p className="text-[10px] text-text-secondary mt-1">Unlock attendance marking and database tools</p>
+                  <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest font-mono text-left">Current CGPA</p>
+                  <p className={clsx("font-bold text-text-primary mt-1", displayCgpa ? "text-lg" : "text-xs")}>
+                    {displayCgpa || 'Calculate Now!'}
+                  </p>
+                </div>
+              </Link>
+            )}
+          </section>
+
+          {/* Live Schedule Tracker */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">Today's Class</h2>
+              <Link to="/timetable" className="text-[10px] font-bold text-accent-blue hover:underline flex items-center gap-0.5">
+                Full Schedule <ArrowRight size={10} />
+              </Link>
+            </div>
+            <div className="relative overflow-hidden rounded-3xl neu-flat p-5 border border-border-color/10">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-accent-blue/5 blur-2xl rounded-full"></div>
+              <div className="grid grid-cols-2 gap-4 divide-x divide-border-color/10">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl neu-inset flex items-center justify-center text-accent-blue shrink-0">
+                    <Clock size={16} className="animate-pulse" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Current Period</p>
+                    <h3 className="text-sm font-bold text-text-primary mt-1 leading-tight truncate" title={currentPeriod}>
+                      {currentPeriod}
+                    </h3>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 min-w-0 pl-4">
+                  <div className="w-9 h-9 rounded-xl neu-inset flex items-center justify-center text-accent-purple shrink-0">
+                    <SkipForward size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Next Period</p>
+                    <h3 className="text-sm font-bold text-text-primary mt-1 leading-tight truncate" title={nextPeriod}>
+                      {nextPeriod}
+                    </h3>
+                  </div>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-text-secondary">
-                <ArrowRight size={18} />
+            </div>
+          </section>
+        </div>
+
+        {/* Right Column */}
+        <div className="md:col-span-5 space-y-6">
+          {/* Quick Navigation Cards */}
+          <section className="space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2">Quick Navigation</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="neu-flat-hover p-4 rounded-2xl flex flex-col items-center gap-3 block"
+                >
+                  <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center", link.color)}>
+                    <link.icon size={18} className={link.iconColor} />
+                  </div>
+                  <p className="text-[10px] font-bold text-center leading-tight">{link.title}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Admin Actions or Login */}
+          {isEligibleForAdmin && (
+            <section className="space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">
+                  {isAdmin ? 'Admin Console' : 'Faculty Access'}
+                </h2>
               </div>
-            </Link>
+
+              {isAdmin ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {visibleActions.map((action, idx) => (
+                    <motion.div
+                      key={action.title}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="h-full"
+                    >
+                      <Link
+                        to={action.path}
+                        className="flex flex-col gap-4 p-5 neu-flat-hover rounded-3xl h-full text-left"
+                      >
+                        <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center shrink-0">
+                          <action.icon size={22} className={action.iconColor} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-sm leading-tight text-text-primary">{action.title}</h3>
+                          <p className="text-[10px] text-text-secondary mt-1">{action.desc}</p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  to="/admin-login"
+                  className="flex items-center justify-between p-6 neu-flat-hover rounded-3xl"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-text-secondary">
+                      <Lock size={22} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-text-primary">Login as Administrator</h3>
+                      <p className="text-[10px] text-text-secondary mt-1">Unlock attendance marking and database tools</p>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-full neu-btn flex items-center justify-center text-text-secondary">
+                    <ArrowRight size={18} />
+                  </div>
+                </Link>
+              )}
+            </section>
           )}
-        </section>
-      )}
+        </div>
+
+      </div>
     </div>
   );
 };
