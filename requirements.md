@@ -57,6 +57,7 @@ The student list is currently static/hardcoded. Each student object must contain
   Internal OD: [Last 3 digits or 'nil']
   External OD: [Last 3 digits or 'nil']
   No. of Absentees: [Count]
+  _Check your attendance percentage from https://bit.ly/3Tb4ZSJ_
   ```
 
 ### 4.3. View Attendance (Analytics)
