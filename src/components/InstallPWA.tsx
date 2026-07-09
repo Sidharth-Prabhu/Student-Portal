@@ -87,7 +87,7 @@ const InstallPWA: React.FC = () => {
               <Smartphone size={24} />
             </div>
             <div className="space-y-1">
-              <h3 className="font-bold text-sm text-text-primary">Install Student Portal</h3>
+              <h3 className="font-bold text-sm text-text-primary">Install Magister</h3>
               <p className="text-xs text-text-secondary leading-relaxed">
                 Add this to your home screen for a faster, full-screen experience.
               </p>

@@ -54,7 +54,7 @@ const Login: React.FC = () => {
           >
             <LogIn className="text-accent-blue" size={28} />
           </motion.div>
-          <h1 className="text-3xl font-bold gradient-text">Student Portal</h1>
+          <h1 className="text-3xl font-bold gradient-text">Magister</h1>
           <p className="text-text-secondary mt-2 text-sm">Enter your registration number to continue</p>
         </div>
 

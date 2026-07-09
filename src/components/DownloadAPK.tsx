@@ -51,11 +51,11 @@ export const triggerAPKDownload = async (
   if (setIsDownloading) setIsDownloading(true);
   if (setShowErrorAlert) setShowErrorAlert(false);
 
-  const fallbackUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/download/V1.0/app-release.apk';
-  const latestRedirectUrl = 'https://github.com/Sidharth-Prabhu/Student-Portal/releases/latest/download/app-release.apk';
+  const fallbackUrl = 'https://github.com/Sidharth-Prabhu/Magister/releases/download/V1.0/app-release.apk';
+  const latestRedirectUrl = 'https://github.com/Sidharth-Prabhu/Magister/releases/latest/download/app-release.apk';
 
   try {
-    const response = await fetch('https://api.github.com/repos/Sidharth-Prabhu/Student-Portal/releases/latest', {
+    const response = await fetch('https://api.github.com/repos/Sidharth-Prabhu/Magister/releases/latest', {
       headers: {
         'Accept': 'application/vnd.github.v3+json'
       }
@@ -172,7 +172,7 @@ const DownloadAPK: React.FC<DownloadAPKProps> = ({ isLoggedIn = false }) => {
           
           <div className="mt-3 text-center">
             <a 
-              href="https://github.com/Sidharth-Prabhu/Student-Portal/releases/download/V1.0/app-release.apk"
+              href="https://github.com/Sidharth-Prabhu/Magister/releases/download/V1.0/app-release.apk"
               className="text-[9px] text-text-secondary hover:text-emerald-500 transition-colors underline"
             >
               Having issues? Click here for the direct V1.0 link

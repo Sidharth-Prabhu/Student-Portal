@@ -1,11 +1,11 @@
 {
-  "name": "Student Portal - AI&DS",
-  "short_name": "Student Portal",
+  "name": "Magister - AI&DS",
+  "short_name": "Magister",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#3b82f6",
-  "description": "Student Portal for AI & DS Department",
+  "description": "Magister for AI & DS Department",
   "icons": [
     {
       "src": "favicon.svg",

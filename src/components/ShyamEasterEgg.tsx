@@ -14,6 +14,9 @@ const TARGET_ROLL_NUMBERS = [
 ];
 
 export const ShyamEasterEgg: React.FC = () => {
+  // Temporarily paused
+  return null;
+
   const { user } = useAuth();
   const [shouldShow, setShouldShow] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);

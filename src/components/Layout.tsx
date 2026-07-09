@@ -7,7 +7,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import InstallPWA from './InstallPWA';
 import DownloadAPK from './DownloadAPK';
-import { ShyamEasterEgg } from './ShyamEasterEgg';
+// import { ShyamEasterEgg } from './ShyamEasterEgg';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,7 +30,7 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col font-sans selection:bg-accent-blue/30">
-      <ShyamEasterEgg />
+      {/* <ShyamEasterEgg /> */}
       {/* Main Content Area */}
       <main className={cn(
         "flex-grow flex flex-col",
