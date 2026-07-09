@@ -241,58 +241,54 @@ const FacultyDashboard: React.FC = () => {
                 <p className="text-text-secondary text-sm font-medium">No records found</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {summaryData.map(s => {
-                  const isCritical = s.percentage < 75;
-                  return (
-                    <motion.div
-                      key={s.regNum}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={clsx(
-                        "p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border transition-all",
-                        isCritical 
-                          ? "bg-red-500/10 border-red-500/30 shadow-[inset_0_2px_10px_rgba(239,68,68,0.1)]" 
-                          : "neu-flat border-border-color/10"
-                      )}
-                    >
-                      <div>
-                        <h3 className={clsx("font-bold text-sm", isCritical ? "text-red-400" : "text-text-primary")}>
-                          {s.name}
-                        </h3>
-                        <p className="text-xs font-mono text-text-secondary mt-0.5">{s.regNum}</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-6">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
-                          <div>
-                            <span className="text-text-secondary mr-2">P:</span>
-                            <span className="font-bold text-emerald-500">{s.presentCount}</span>
-                          </div>
-                          <div>
-                            <span className="text-text-secondary mr-2">A:</span>
-                            <span className="font-bold text-red-500">{s.absentCount}</span>
-                          </div>
-                          <div>
-                            <span className="text-text-secondary mr-2">I-OD:</span>
-                            <span className="font-bold text-accent-blue">{s.iodCount}</span>
-                          </div>
-                          <div>
-                            <span className="text-text-secondary mr-2">E-OD:</span>
-                            <span className="font-bold text-accent-purple">{s.eodCount}</span>
-                          </div>
-                        </div>
-                        
-                        <div className={clsx(
-                          "px-3 py-1.5 rounded-xl font-bold text-sm min-w-[70px] text-center",
-                          isCritical ? "bg-red-500/20 text-red-500" : "bg-emerald-500/10 text-emerald-500"
-                        )}>
-                          {s.percentage.toFixed(1)}%
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border-color/10 text-xs text-text-secondary uppercase tracking-wider">
+                      <th className="p-3 font-bold">Student</th>
+                      <th className="p-3 font-bold text-center">P</th>
+                      <th className="p-3 font-bold text-center">A</th>
+                      <th className="p-3 font-bold text-center">I-OD</th>
+                      <th className="p-3 font-bold text-center">E-OD</th>
+                      <th className="p-3 font-bold text-right">Attendance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {summaryData.map(s => {
+                      const isCritical = s.percentage < 75;
+                      return (
+                        <motion.tr
+                          key={s.regNum}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={clsx(
+                            "border-b border-border-color/5 last:border-0 transition-colors hover:bg-border-color/5",
+                            isCritical && "bg-red-500/10 hover:bg-red-500/20"
+                          )}
+                        >
+                          <td className="p-3">
+                            <div className={clsx("font-bold text-sm", isCritical ? "text-red-400" : "text-text-primary")}>
+                              {s.name}
+                            </div>
+                            <div className="text-xs font-mono text-text-secondary mt-0.5">{s.regNum}</div>
+                          </td>
+                          <td className="p-3 text-center text-sm font-bold text-emerald-500">{s.presentCount}</td>
+                          <td className="p-3 text-center text-sm font-bold text-red-500">{s.absentCount}</td>
+                          <td className="p-3 text-center text-sm font-bold text-accent-blue">{s.iodCount}</td>
+                          <td className="p-3 text-center text-sm font-bold text-accent-purple">{s.eodCount}</td>
+                          <td className="p-3 text-right">
+                            <span className={clsx(
+                              "inline-block px-3 py-1.5 rounded-xl font-bold text-sm min-w-[70px] text-center",
+                              isCritical ? "bg-red-500/20 text-red-500" : "bg-emerald-500/10 text-emerald-500"
+                            )}>
+                              {s.percentage.toFixed(1)}%
+                            </span>
+                          </td>
+                        </motion.tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </section>
