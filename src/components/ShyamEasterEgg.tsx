@@ -9,7 +9,8 @@ const TARGET_ROLL_NUMBERS = [
   '2117240070291',
   '2117240070306',
   '2117240070256',
-  '2117240070293'
+  '2117240070293',
+  '2117240070305'
 ];
 
 export const ShyamEasterEgg: React.FC = () => {
@@ -188,7 +189,7 @@ export const ShyamEasterEgg: React.FC = () => {
                     muted={isMuted}
                     className="w-full max-w-[280px] md:max-w-[320px] aspect-[9/16] object-cover mx-auto rounded-2xl border-4 border-emerald-500/80 shadow-[0_0_50px_rgba(16,185,129,0.4)] bg-black"
                   />
-                  
+
                   {/* Decorative Islamic badges */}
                   <motion.div
                     animate={{ scale: [0.95, 1.05, 0.95] }}
