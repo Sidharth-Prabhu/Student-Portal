@@ -9,6 +9,7 @@ import Timetable from './pages/Timetable';
 import Attendance from './pages/Attendance';
 import CGPA from './pages/CGPA';
 import ExamTimetable from './pages/ExamTimetable';
+import CatSchedule from './pages/CatSchedule';
 import MarkAttendance from './pages/MarkAttendance';
 import ViewAttendance from './pages/ViewAttendance';
 import Summary from './pages/Summary';
@@ -90,6 +91,7 @@ function App() {
             <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/cgpa" element={<ProtectedRoute><CGPA /></ProtectedRoute>} />
             <Route path="/exam-timetable" element={<ProtectedRoute><ExamTimetable /></ProtectedRoute>} />
+            <Route path="/cat-schedule" element={<ProtectedRoute><CatSchedule /></ProtectedRoute>} />
             <Route path="/student/:id" element={<ProtectedRoute><StudentDetails /></ProtectedRoute>} />
 
             {/* Admin Only Features */}

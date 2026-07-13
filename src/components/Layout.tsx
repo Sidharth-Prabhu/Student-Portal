@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, Calendar, Calculator, Clock } from 'lucide-react';
+import { Home, Calendar, Calculator, Clock, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -24,6 +24,7 @@ const Layout: React.FC = () => {
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Schedule', path: '/timetable', icon: Clock },
+    { name: 'CAT', path: '/cat-schedule', icon: BookOpen },
     { name: 'Attendance', path: '/attendance', icon: Calendar },
     { name: 'Grades', path: '/cgpa', icon: Calculator },
   ];

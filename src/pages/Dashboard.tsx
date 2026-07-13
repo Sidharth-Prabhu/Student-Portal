@@ -22,12 +22,14 @@ import {
   LogOut,
   Sun,
   Moon,
-  SkipForward
+  SkipForward,
+  MapPin
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { clsx } from 'clsx';
 import { useCurrentPeriods } from '../hooks/useCurrentPeriods';
+import { catSchedule } from '../data/catSchedule';
 
 const adminActions = [
   {
@@ -90,10 +92,50 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { currentPeriod, nextPeriod } = useCurrentPeriods();
 
+  const parseDateStr = (dateStr: string) => {
+    const parts = dateStr.split('-');
+    const months: Record<string, string> = {
+      'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+      'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+    };
+    return new Date(`20${parts[2]}-${months[parts[1]]}-${parts[0]}T00:00:00`);
+  };
+
+  const getDaysRemaining = (examDateStr: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const examDate = parseDateStr(examDateStr);
+    const diffTime = examDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const nextExam = catSchedule
+    .map(exam => ({ ...exam, daysLeft: getDaysRemaining(exam.date) }))
+    .filter(exam => exam.daysLeft >= 0)
+    .sort((a, b) => parseDateStr(a.date).getTime() - parseDateStr(b.date).getTime())[0];
+
+  const getTodaySeatingStr = () => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = String(today.getFullYear()).slice(-2);
+    return `${day}.${month}.${year}`;
+  };
+  const formattedToday = getTodaySeatingStr();
+
   const [displayCgpa, setDisplayCgpa] = useState<string | null>(null);
   const [isLoadingCgpa, setIsLoadingCgpa] = useState(true);
   const [attendanceStatus, setAttendanceStatus] = useState<{ label: string, percentage: number | null, color: string } | null>(null);
   const [isLoadingAttendance, setIsLoadingAttendance] = useState(true);
+
+  interface SeatingAllocation {
+    courseCode: string;
+    date: string;
+    hallNo: string;
+    name: string;
+    seatNo: string;
+  }
+  const [seating, setSeating] = useState<SeatingAllocation | null>(null);
 
   const visibleActions = isDev ? [
     ...adminActions,
@@ -173,7 +215,19 @@ const Dashboard: React.FC = () => {
         }
       };
 
-      await Promise.all([fetchCgpa(), fetchAttendance()]);
+      const fetchSeating = async () => {
+        try {
+          const docRef = doc(db, 'seating_allocations', user.regNum);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setSeating(docSnap.data() as SeatingAllocation);
+          }
+        } catch (e) {
+          console.error("Dashboard seating fetch error", e);
+        }
+      };
+
+      await Promise.all([fetchCgpa(), fetchAttendance(), fetchSeating()]);
     };
 
     fetchData();
@@ -292,6 +346,44 @@ const Dashboard: React.FC = () => {
             )}
           </section>
 
+          {/* Today's Seating Arrangement Card */}
+          <section className="space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2">Today's Exam Seating</h2>
+            {seating && seating.date === formattedToday ? (
+              <div className="relative overflow-hidden rounded-3xl neu-flat p-5 border border-emerald-500/20 bg-emerald-500/[0.02]">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full"></div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-emerald-500 shrink-0">
+                    <MapPin size={22} />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Seating Details</p>
+                    <h3 className="text-base font-black text-text-primary mt-1">
+                      Hall: <span className="text-emerald-500">{seating.hallNo}</span> • Seat: <span className="text-accent-purple">{seating.seatNo}</span>
+                    </h3>
+                    <p className="text-[10px] text-text-secondary mt-1 font-mono">
+                      {seating.courseCode} • {seating.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-3xl neu-flat p-5 border border-border-color/10 opacity-60">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center text-text-secondary shrink-0">
+                    <MapPin size={22} className="opacity-50" />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="text-[9px] uppercase font-bold text-text-secondary tracking-wider">Seating Details</p>
+                    <h3 className="text-sm font-bold text-text-secondary mt-1">
+                      Seating will be displayed here before exam
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
           {/* Live Schedule Tracker */}
           <section className="space-y-4">
             <div className="flex items-center justify-between px-2">
@@ -327,6 +419,57 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Next CAT Exam Card */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">Next CAT Exam</h2>
+              <Link to="/cat-schedule" className="text-[10px] font-bold text-accent-blue hover:underline flex items-center gap-0.5">
+                Full Schedule <ArrowRight size={10} />
+              </Link>
+            </div>
+            {nextExam ? (
+              <div className="relative overflow-hidden rounded-3xl neu-flat p-5 border border-border-color/10">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-accent-purple/5 blur-2xl rounded-full"></div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl neu-inset flex flex-col items-center justify-center font-bold text-accent-purple shrink-0">
+                      <span className="text-[9px] uppercase leading-none font-bold">{nextExam.date.split('-')[1]}</span>
+                      <span className="text-sm leading-tight font-extrabold mt-0.5">{nextExam.date.split('-')[0]}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-text-primary leading-tight truncate" title={nextExam.courseTitle}>
+                        {nextExam.courseTitle}
+                      </h3>
+                      <p className="text-[9px] font-mono text-text-secondary mt-1">
+                        {nextExam.courseCode} • {nextExam.session === 'F.N.' ? 'Forenoon (09:30 AM)' : 'Afternoon (01:30 PM)'}
+                      </p>
+                      {seating && seating.date === formattedToday && seating.courseCode === nextExam.courseCode && (
+                        <div className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold">
+                          <MapPin size={8} />
+                          <span>Hall: {seating.hallNo} • Seat: {seating.seatNo}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span className={clsx(
+                      "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-[inset_1px_1px_3px_rgba(0,0,0,0.05)] border",
+                      nextExam.daysLeft === 0
+                        ? "bg-red-500/10 text-red-500 border-red-500/20"
+                        : "bg-accent-blue/10 text-accent-blue border-accent-blue/20"
+                    )}>
+                      {nextExam.daysLeft === 0 ? 'TODAY' : nextExam.daysLeft === 1 ? 'TOMORROW' : `in ${nextExam.daysLeft} days`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative overflow-hidden rounded-3xl neu-flat p-5 border border-border-color/10 text-center py-6">
+                <p className="text-xs font-bold text-text-secondary">All exams completed! 🎉</p>
+              </div>
+            )}
           </section>
         </div>
 
