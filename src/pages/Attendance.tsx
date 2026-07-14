@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   TrendingUp,
   Database,
+  Calendar,
+  Calculator,
   type LucideIcon
 } from 'lucide-react';
 import { students } from '../data/students';
@@ -49,6 +51,15 @@ const Attendance: React.FC = () => {
   const [results, setResults] = useState<AttendanceResults | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState('');
+  
+  // Leave Calculator State
+  const [leaveStartDate, setLeaveStartDate] = useState('');
+  const [leaveEndDate, setLeaveEndDate] = useState('');
+  const [absentDates, setAbsentDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    setAbsentDates([]);
+  }, [leaveStartDate, leaveEndDate]);
 
   const fetchAttendance = useCallback(async (targetReg: string) => {
     if (!targetReg) return;
@@ -131,6 +142,82 @@ const Attendance: React.FC = () => {
     fetchAttendance(reg);
   };
 
+  const getProjectedAttendance = useCallback(() => {
+    if (!results || !leaveStartDate || !leaveEndDate) return null;
+
+    const start = new Date(leaveStartDate);
+    const end = new Date(leaveEndDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+      return null;
+    }
+
+    const classDates: string[] = [];
+    const current = new Date(start);
+    while (current <= end) {
+      const day = current.getDay();
+      const isWeekend = day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+
+      if (!isWeekend) {
+        const year = current.getFullYear();
+        const month = String(current.getMonth() + 1).padStart(2, '0');
+        const dateVal = String(current.getDate()).padStart(2, '0');
+        classDates.push(`${year}-${month}-${dateVal}`);
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    let projectedTotal = results.total;
+    let projectedPresent = results.present;
+    let projectedAbsent = results.absent;
+
+    classDates.forEach(dateStr => {
+      const isSimulatedAbsent = absentDates.includes(dateStr);
+      const existingRecord = results.records.find(r => r.date === dateStr);
+
+      if (existingRecord) {
+        if (existingRecord.type === 'Absent') {
+          if (!isSimulatedAbsent) {
+            projectedPresent += 1;
+            projectedAbsent = Math.max(0, projectedAbsent - 1);
+          }
+        } else {
+          if (isSimulatedAbsent) {
+            projectedPresent = Math.max(0, projectedPresent - 1);
+            projectedAbsent += 1;
+          }
+        }
+      } else {
+        projectedTotal += 1;
+        if (isSimulatedAbsent) {
+          projectedAbsent += 1;
+        } else {
+          projectedPresent += 1;
+        }
+      }
+    });
+
+    const projectedPercentage = projectedTotal > 0 ? (projectedPresent / projectedTotal) * 100 : 0;
+    const projectedSafeLeaves = Math.max(0, Math.floor((projectedPresent - 0.75 * projectedTotal) / 0.75));
+
+    let projectedStatus = 'Critical';
+    if (projectedPercentage >= 75) {
+      projectedStatus = projectedPercentage >= 85 ? 'Excellent' : 'Good';
+    } else if (projectedPercentage >= 65) {
+      projectedStatus = 'Warning';
+    }
+
+    return {
+      classDates,
+      total: projectedTotal,
+      present: projectedPresent,
+      absent: projectedAbsent,
+      percentage: projectedPercentage.toFixed(2),
+      status: projectedStatus,
+      safeLeaves: projectedSafeLeaves
+    };
+  }, [results, leaveStartDate, leaveEndDate, absentDates]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Excellent': return 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10';
@@ -147,6 +234,8 @@ const Attendance: React.FC = () => {
       month: 'short'
     });
   };
+
+  const projected = getProjectedAttendance();
 
   return (
     <div className="space-y-6 max-w-lg md:max-w-5xl mx-auto">
@@ -314,8 +403,127 @@ const Attendance: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6 h-full flex flex-col"
               >
+                {/* Leave Calculator */}
+                <section className="neu-flat rounded-3xl p-6 border border-border-color/10 space-y-4">
+                  <div className="flex items-center gap-2 text-text-secondary border-b border-border-color/10 pb-3">
+                    <Calculator size={18} className="text-accent-blue" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest">Leave Calculator</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">Start Date</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40" size={14} />
+                        <input
+                          type="date"
+                          value={leaveStartDate}
+                          onChange={(e) => setLeaveStartDate(e.target.value)}
+                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">End Date</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40" size={14} />
+                        <input
+                          type="date"
+                          value={leaveEndDate}
+                          onChange={(e) => setLeaveEndDate(e.target.value)}
+                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {projected ? (
+                    <div className="space-y-4 pt-2">
+                      {projected.classDates.length > 0 ? (
+                        <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">
+                            Toggle Days to Mark as Absent
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                            {projected.classDates.map((dateStr) => {
+                              const isAbsent = absentDates.includes(dateStr);
+                              return (
+                                <button
+                                  key={dateStr}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isAbsent) {
+                                      setAbsentDates(absentDates.filter(d => d !== dateStr));
+                                    } else {
+                                      setAbsentDates([...absentDates, dateStr]);
+                                    }
+                                  }}
+                                  className={clsx(
+                                    "flex flex-col items-center justify-center p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer shadow-sm",
+                                    isAbsent
+                                      ? "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
+                                      : "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+                                  )}
+                                >
+                                  <span>{formatDate(dateStr)}</span>
+                                  <span className="text-[8px] uppercase tracking-wider font-semibold opacity-75 mt-0.5">
+                                    {isAbsent ? "Absent" : "Attended"}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center p-3 bg-bg-secondary/40 rounded-xl border border-border-color text-xs font-semibold text-text-secondary">
+                          No class days found in the selected range (excluding weekends).
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-bg-secondary/40 border border-border-color">
+                        <div>
+                          <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Attended Days</p>
+                          <p className="text-xl font-extrabold text-text-primary mt-0.5">
+                            {projected.classDates.length - absentDates.filter(d => projected.classDates.includes(d)).length} / {projected.classDates.length}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Projected Attendance</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs line-through text-text-secondary">{results.percentage}%</span>
+                            <span className={clsx("text-base font-black px-2 py-0.5 rounded-lg", getStatusColor(projected.status))}>
+                              {projected.percentage}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {parseFloat(projected.percentage) < 75 ? (
+                        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-red-500/10 text-red-500 dark:text-red-400 border border-red-500/20 text-xs font-semibold leading-relaxed">
+                          <AlertTriangle className="shrink-0 mt-0.5" size={16} />
+                          <span>Warning: Attendance will drop below the required 75% threshold!</span>
+                        </div>
+                      ) : parseFloat(projected.percentage) < 85 ? (
+                        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20 text-xs font-semibold leading-relaxed">
+                          <AlertTriangle className="shrink-0 mt-0.5" size={16} />
+                          <span>Note: Attendance will drop below the recommended 85% safety threshold.</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold leading-relaxed">
+                          <CheckCircle2 className="shrink-0 mt-0.5" size={16} />
+                          <span>Great! Your attendance will remain safe and above 85%.</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center p-4 bg-bg-secondary/20 rounded-2xl border border-dashed border-border-color/60">
+                      <p className="text-[10px] text-text-secondary font-medium uppercase tracking-wider">Select a valid start & end date to calculate projected attendance</p>
+                    </div>
+                  )}
+                </section>
+
                 {/* History List */}
-                <div className="space-y-3 flex flex-col h-[480px]">
+                <div className="space-y-3 flex flex-col h-[300px]">
                   <h3 className="text-xs font-bold uppercase tracking-widest text-text-secondary px-2 flex-shrink-0">History</h3>
                   {results.records.length > 0 ? (
                     <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-4 mask-gradient-bottom">
