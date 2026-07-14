@@ -404,34 +404,34 @@ const Attendance: React.FC = () => {
                 className="space-y-6 h-full flex flex-col"
               >
                 {/* Leave Calculator */}
-                <section className="neu-flat rounded-3xl p-6 border border-border-color/10 space-y-4">
+                <section className="neu-flat rounded-3xl p-4 sm:p-6 border border-border-color/10 space-y-4 w-full max-w-full overflow-hidden">
                   <div className="flex items-center gap-2 text-text-secondary border-b border-border-color/10 pb-3">
                     <Calculator size={18} className="text-accent-blue" />
                     <h3 className="text-xs font-bold uppercase tracking-widest">Leave Calculator</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-full">
+                    <div className="space-y-1 w-full max-w-full">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">Start Date</label>
-                      <div className="relative">
+                      <div className="relative w-full max-w-full">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveStartDate}
                           onChange={(e) => setLeaveStartDate(e.target.value)}
-                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px]"
+                          className="w-full max-w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border"
                         />
                       </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 w-full max-w-full">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">End Date</label>
-                      <div className="relative">
+                      <div className="relative w-full max-w-full">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveEndDate}
                           onChange={(e) => setLeaveEndDate(e.target.value)}
-                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px]"
+                          className="w-full max-w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border"
                         />
                       </div>
                     </div>
