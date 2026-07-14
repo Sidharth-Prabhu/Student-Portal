@@ -414,24 +414,24 @@ const Attendance: React.FC = () => {
                     <div className="space-y-1">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">Start Date</label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40" size={14} />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveStartDate}
                           onChange={(e) => setLeaveStartDate(e.target.value)}
-                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary"
+                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px]"
                         />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">End Date</label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40" size={14} />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveEndDate}
                           onChange={(e) => setLeaveEndDate(e.target.value)}
-                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary"
+                          className="w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px]"
                         />
                       </div>
                     </div>
@@ -480,7 +480,7 @@ const Attendance: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-bg-secondary/40 border border-border-color">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-bg-secondary/40 border border-border-color">
                         <div>
                           <p className="text-[9px] text-text-secondary uppercase font-bold tracking-wider">Attended Days</p>
                           <p className="text-xl font-extrabold text-text-primary mt-0.5">
