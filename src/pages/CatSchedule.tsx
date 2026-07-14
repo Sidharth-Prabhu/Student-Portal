@@ -105,32 +105,6 @@ const CatSchedule: React.FC = () => {
   };
   const formattedToday = getTodaySeatingStr();
 
-  // Get unique exam dates
-  const uniqueDates = Array.from(new Set(catSchedule.map(exam => exam.date)));
-
-  // Determine initial selected date
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Check if today matches any exam date
-    const todayStr = uniqueDates.find(d => {
-      const examDate = parseDateStr(d);
-      return examDate.getTime() === today.getTime();
-    });
-    if (todayStr) return todayStr;
-
-    // Otherwise find the first upcoming exam date
-    const upcoming = uniqueDates.find(d => {
-      const examDate = parseDateStr(d);
-      return examDate.getTime() > today.getTime();
-    });
-    return upcoming || uniqueDates[0];
-  });
-
-  // Filter exams for selected date
-  const dayExams = catSchedule.filter(exam => exam.date === selectedDate);
-
   // Find next exam relative to current time
   const upcomingExams = catSchedule
     .map(exam => ({ ...exam, daysLeft: getDaysRemaining(exam.date) }))
@@ -140,7 +114,7 @@ const CatSchedule: React.FC = () => {
   const nextExam = upcomingExams[0];
   const completedCount = catSchedule.filter(exam => getDaysRemaining(exam.date) < 0).length;
 
-  const isSelectedDateToday = getDaysRemaining(selectedDate) === 0;
+  const hasExamToday = catSchedule.some(exam => getDaysRemaining(exam.date) === 0);
 
   return (
     <div className="space-y-6 max-w-lg md:max-w-5xl mx-auto pb-8">
@@ -193,39 +167,6 @@ const CatSchedule: React.FC = () => {
                 </div>
               </div>
             </div>
-          </section>
-
-          {/* Date Selector - Horizontal Scroll */}
-          <section className="flex items-center gap-3.5 overflow-x-auto pb-3.5 no-scrollbar px-1">
-            {uniqueDates.map((dateStr) => {
-              const dateObj = parseDateStr(dateStr);
-              const dayName = dateStr.split('-')[0];
-              const monthName = dateStr.split('-')[1];
-              const isSelected = selectedDate === dateStr;
-              const daysRemaining = getDaysRemaining(dateStr);
-              const isPast = daysRemaining < 0;
-
-              return (
-                <button
-                  key={dateStr}
-                  onClick={() => setSelectedDate(dateStr)}
-                  className={clsx(
-                    "px-5 py-3 rounded-2xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border flex flex-col items-center gap-0.5",
-                    isSelected 
-                      ? "neu-inset text-accent-blue font-black border-accent-blue/30" 
-                      : "neu-flat text-text-secondary hover:text-text-primary border-border-color/10",
-                    isPast && !isSelected && "opacity-60"
-                  )}
-                >
-                  <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-60">
-                    {dateObj.toLocaleDateString('en-US', { weekday: 'short' })}
-                  </span>
-                  <span className="text-sm font-black mt-0.5">
-                    {dayName} {monthName}
-                  </span>
-                </button>
-              );
-            })}
           </section>
 
           {/* Banner Details */}
@@ -329,7 +270,7 @@ const CatSchedule: React.FC = () => {
           <div className="neu-inset rounded-2xl p-4 flex items-start gap-3 border border-border-color/5">
             <Info size={15} className="text-accent-blue shrink-0 mt-0.5" />
             <p className="text-[9px] text-text-secondary leading-normal font-medium italic">
-              Select any date to view the scheduled exams and timings. Upcoming exams are highlighted automatically.
+              Upcoming exams are highlighted automatically. Forenoon (F.N.) exams take place from 09:30 AM to 11:00 AM.
             </p>
           </div>
         </div>
@@ -339,7 +280,7 @@ const CatSchedule: React.FC = () => {
           <div className="flex gap-4 items-stretch">
             {/* Left timeline line */}
             <div className="w-1.5 neu-inset rounded-full relative shrink-0 my-1 border-0">
-              {isSelectedDateToday && (
+              {hasExamToday && (
                 <>
                   <div className="absolute top-0 left-0 w-full h-full bg-accent-blue/30 rounded-full z-10" />
                   <motion.div 
@@ -359,10 +300,14 @@ const CatSchedule: React.FC = () => {
             </div>
 
             <section className="flex-grow space-y-3">
-              {dayExams.map((exam, idx) => {
+              {catSchedule.map((exam, idx) => {
                 const daysRemaining = getDaysRemaining(exam.date);
                 const isPast = daysRemaining < 0;
                 const isToday = daysRemaining === 0;
+
+                const dateParts = exam.date.split('-');
+                const examDayNum = dateParts[0];
+                const examMonth = dateParts[1];
 
                 return (
                   <motion.div
@@ -383,17 +328,20 @@ const CatSchedule: React.FC = () => {
                       <div className="absolute top-0 right-0 w-24 h-24 bg-accent-blue/5 blur-2xl rounded-full"></div>
                     )}
 
-                    {/* Session indicators like period numbers */}
-                    <div className="w-12 text-center shrink-0">
-                      <p className={clsx("text-xs font-black uppercase tracking-wider", isToday ? "text-accent-blue" : "text-text-primary")}>
+                    {/* Date/Session indicator */}
+                    <div className="w-16 text-center shrink-0 flex flex-col items-center justify-center">
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold opacity-60 text-text-secondary leading-none">
+                        {exam.day.slice(0, 3)}
+                      </span>
+                      <span className={clsx("text-sm font-black mt-1 leading-none", isToday ? "text-accent-blue" : "text-text-primary")}>
+                        {examDayNum} {examMonth}
+                      </span>
+                      <span className="text-[8px] uppercase font-bold text-text-secondary tracking-tight mt-1.5 bg-bg-secondary px-1.5 py-0.5 rounded border border-border-color/10">
                         {exam.session}
-                      </p>
-                      <p className="text-[8px] uppercase font-bold text-text-secondary tracking-tight mt-0.5">
-                        {exam.session === 'F.N.' ? '09:30 AM' : '01:30 PM'}
-                      </p>
+                      </span>
                     </div>
                     
-                    <div className={clsx("h-8 w-[1px]", isToday ? "bg-accent-blue/45" : "bg-text-secondary/20")}></div>
+                    <div className={clsx("h-10 w-[1px]", isToday ? "bg-accent-blue/45" : "bg-text-secondary/20")}></div>
                     
                     <div className="flex-grow min-w-0">
                       <div className="flex items-center gap-2">
@@ -405,8 +353,8 @@ const CatSchedule: React.FC = () => {
                       <p className="text-[9px] text-text-secondary mt-1 font-mono">{exam.courseCode}</p>
                       {seating && seating.date === formattedToday && seating.courseCode === exam.courseCode && (
                         <div className="inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold">
-                          <MapPin size={8} />
-                          <span>Hall: {seating.hallNo} • Seat: {seating.seatNo}</span>
+                           <MapPin size={8} />
+                           <span>Hall: {seating.hallNo} • Seat: {seating.seatNo}</span>
                         </div>
                       )}
                     </div>
