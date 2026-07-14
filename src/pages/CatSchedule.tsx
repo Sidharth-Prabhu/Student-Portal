@@ -97,10 +97,16 @@ const CatSchedule: React.FC = () => {
   };
 
   const getTodaySeatingStr = () => {
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const year = String(today.getFullYear()).slice(-2);
+    const formatter = new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit'
+    });
+    const parts = formatter.formatToParts(new Date());
+    const day = parts.find(p => p.type === 'day')?.value || '';
+    const month = parts.find(p => p.type === 'month')?.value || '';
+    const year = parts.find(p => p.type === 'year')?.value || '';
     return `${day}.${month}.${year}`;
   };
   const formattedToday = getTodaySeatingStr();
