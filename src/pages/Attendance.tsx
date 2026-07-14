@@ -410,28 +410,28 @@ const Attendance: React.FC = () => {
                     <h3 className="text-xs font-bold uppercase tracking-widest">Leave Calculator</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-full">
-                    <div className="space-y-1 w-full max-w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-full min-w-0">
+                    <div className="space-y-1 w-full max-w-full min-w-0">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">Start Date</label>
-                      <div className="relative w-full max-w-full">
+                      <div className="relative w-full max-w-full min-w-0">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveStartDate}
                           onChange={(e) => setLeaveStartDate(e.target.value)}
-                          className="w-full max-w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border"
+                          className="w-full max-w-full min-w-0 neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border block"
                         />
                       </div>
                     </div>
-                    <div className="space-y-1 w-full max-w-full">
+                    <div className="space-y-1 w-full max-w-full min-w-0">
                       <label className="text-[9px] uppercase font-bold text-text-secondary ml-2 tracking-wider">End Date</label>
-                      <div className="relative w-full max-w-full">
+                      <div className="relative w-full max-w-full min-w-0">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary/40 pointer-events-none" size={14} />
                         <input
                           type="date"
                           value={leaveEndDate}
                           onChange={(e) => setLeaveEndDate(e.target.value)}
-                          className="w-full max-w-full neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border"
+                          className="w-full max-w-full min-w-0 neu-input rounded-xl py-2.5 pl-9 pr-3 text-xs outline-none transition-colors text-text-primary min-h-[42px] box-border block"
                         />
                       </div>
                     </div>
