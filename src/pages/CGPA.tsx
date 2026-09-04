@@ -22,7 +22,7 @@ interface SavedSem {
 }
 
 const CGPA: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isDbLocked } = useAuth();
   const [selectedSem, setSelectedSem] = useState('');
   const [grades, setGrades] = useState<Record<string, string>>({});
   const [currentGpa, setCurrentGpa] = useState<number | null>(null);
@@ -58,6 +58,10 @@ const CGPA: React.FC = () => {
 
   const saveToCloud = async (data: SavedSem[]) => {
     if (!user) return;
+    if (isDbLocked) {
+      console.warn("Database locked by developer. Cloud save skipped.");
+      return;
+    }
     setIsSyncing(true);
     try {
       const totalPoints = data.reduce((sum, s) => sum + s.gpa * s.credits, 0);

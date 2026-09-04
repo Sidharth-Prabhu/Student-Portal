@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, Calendar, Calculator, Clock, BookOpen } from 'lucide-react';
+import { Home, Calendar, Calculator, Clock, BookOpen, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -14,7 +14,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const Layout: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isDbLocked } = useAuth();
   const location = useLocation();
 
   if (!user && location.pathname !== '/login') {
@@ -84,6 +84,13 @@ const Layout: React.FC = () => {
         "flex-grow flex flex-col min-w-0",
         user ? "pb-24 md:pb-0" : "" // Add space for bottom nav on mobile only
       )}>
+        {isDbLocked && (
+          <div className="bg-red-500/90 text-white text-[11px] font-black uppercase tracking-widest py-2 px-4 text-center flex items-center justify-center gap-2 shadow-md sticky top-0 z-50">
+            <Lock size={14} className="animate-pulse shrink-0" />
+            <span>Database Locked by Developer (2117240070308) — System in Read-Only Mode</span>
+          </div>
+        )}
+
         <div className={cn(
           "px-4 py-6 flex-grow",
           user ? "container mx-auto max-w-lg md:max-w-5xl" : "container mx-auto max-w-lg"

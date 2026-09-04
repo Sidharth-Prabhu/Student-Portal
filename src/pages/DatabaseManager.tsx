@@ -17,7 +17,9 @@ import {
   Key,
   Maximize2,
   Minimize2,
-  ChevronLeft
+  ChevronLeft,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { 
@@ -27,6 +29,7 @@ import {
 } from 'firebase/firestore';
 import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 interface AttendanceData {
   id: string;
@@ -140,11 +143,13 @@ const JSONTreeNode: React.FC<{
 
 const DatabaseManager: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isDbLocked, toggleDbLock } = useAuth();
   const [activeCollection, setActiveCollection] = useState('attendance');
   const [availableCollections] = useState(['attendance', 'user_logs', 'authorized_admins']);
   const [documents, setDocuments] = useState<AttendanceData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isTogglingLock, setIsTogglingLock] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editBuffer, setEditDocBuffer] = useState<AttendanceData | null>(null);
@@ -247,9 +252,43 @@ const DatabaseManager: React.FC = () => {
               <p className="text-[9px] text-text-secondary font-bold uppercase tracking-wider">Global Document Manager</p>
             </div>
           </div>
-          <div className="w-10 h-10 rounded-2xl neu-inset text-text-secondary flex items-center justify-center shrink-0 opacity-50">
-            <Plus size={18} />
-          </div>
+
+          {user?.regNum === '2117240070308' && (
+            <button
+              onClick={async () => {
+                if (!window.confirm(`Are you sure you want to ${isDbLocked ? 'unlock' : 'lock'} the database?`)) return;
+                setIsTogglingLock(true);
+                try {
+                  await toggleDbLock();
+                } catch (e: unknown) {
+                  alert(e instanceof Error ? e.message : "Failed to toggle lock");
+                } finally {
+                  setIsTogglingLock(false);
+                }
+              }}
+              disabled={isTogglingLock}
+              className={clsx(
+                "px-4 py-2.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center gap-2 border transition-all cursor-pointer shadow-md",
+                isDbLocked 
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30" 
+                  : "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30"
+              )}
+            >
+              {isTogglingLock ? (
+                <Loader2 className="animate-spin" size={14} />
+              ) : isDbLocked ? (
+                <>
+                  <Unlock size={14} />
+                  Unlock
+                </>
+              ) : (
+                <>
+                  <Lock size={14} />
+                  Lock DB
+                </>
+              )}
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 overflow-x-auto no-scrollbar pb-1">

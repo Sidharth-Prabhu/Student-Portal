@@ -9,7 +9,9 @@ import {
   AlertCircle,
   Check,
   ChevronLeft,
-  Search
+  Search,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { db, secondaryAuth } from '../lib/firebase';
 import { collection, getDocs, orderBy, query, doc, setDoc } from 'firebase/firestore';
@@ -17,6 +19,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
+import { useAuth } from '../context/AuthContext';
 
 interface UserLog {
   id: string;
@@ -28,10 +31,12 @@ interface UserLog {
 }
 
 const DevConsole: React.FC = () => {
+  const { user, isDbLocked, toggleDbLock } = useAuth();
   const [logs, setLogs] = useState<UserLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
   const [todayVisits, setTodayVisits] = useState(0);
   const [activeTab, setActiveTab] = useState<'analytics' | 'add_admin'>('analytics');
+  const [isTogglingLock, setIsTogglingLock] = useState(false);
   const navigate = useNavigate();
 
   // New Admin Form State
@@ -63,8 +68,33 @@ const DevConsole: React.FC = () => {
     if (activeTab === 'analytics') fetchLogs();
   }, [activeTab, fetchLogs]);
 
+  const handleToggleDbLock = async () => {
+    if (user?.regNum !== '2117240070308') {
+      alert("Only the developer (2117240070308) can lock or unlock the database.");
+      return;
+    }
+    const action = isDbLocked ? 'unlock' : 'lock';
+    if (!window.confirm(`Are you sure you want to ${action} the database? ${!isDbLocked ? 'No user will be able to write or edit database records until unlocked.' : ''}`)) {
+      return;
+    }
+
+    setIsTogglingLock(true);
+    try {
+      await toggleDbLock();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to toggle database lock.";
+      alert(msg);
+    } finally {
+      setIsTogglingLock(false);
+    }
+  };
+
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDbLocked) {
+      setAdminStatus({ type: 'error', message: 'Database is locked by the developer (2117240070308). Cannot add new admins.' });
+      return;
+    }
     if (!selectedStudent || !password) {
       setAdminStatus({ type: 'error', message: 'Please select a student and enter a password.' });
       return;
@@ -104,18 +134,89 @@ const DevConsole: React.FC = () => {
   return (
     <div className="space-y-6 max-w-lg md:max-w-5xl mx-auto pb-8">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <h1 className="text-xl font-bold flex items-center gap-2 text-text-primary">
-          <Terminal className="text-red-500" size={20} /> 
-          Developer Console
-        </h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-2.5 neu-btn rounded-xl flex items-center justify-center text-text-secondary hover:text-text-primary"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <h1 className="text-xl font-bold flex items-center gap-2 text-text-primary">
+            <Terminal className="text-red-500" size={20} /> 
+            Developer Console
+          </h1>
+        </div>
       </div>
+
+      {/* Developer Database Lock Control Card */}
+      {user?.regNum === '2117240070308' && (
+        <section className={clsx(
+          "neu-flat rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden",
+          isDbLocked 
+            ? "border-red-500/40 bg-red-500/5 shadow-[0_0_30px_rgba(239,68,68,0.15)]" 
+            : "border-emerald-500/30 bg-emerald-500/5 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+        )}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className={clsx(
+                "p-3.5 rounded-2xl neu-inset shrink-0 mt-0.5",
+                isDbLocked ? "text-red-500" : "text-emerald-500"
+              )}>
+                {isDbLocked ? <Lock size={28} /> : <Unlock size={28} />}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black tracking-wide text-text-primary">
+                    Database Master Lock (2117240070308)
+                  </h3>
+                  <span className={clsx(
+                    "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                    isDbLocked 
+                      ? "bg-red-500/20 text-red-400 border-red-500/40 animate-pulse" 
+                      : "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  )}>
+                    {isDbLocked ? "LOCKED (Read-Only)" : "UNLOCKED (Normal)"}
+                  </span>
+                </div>
+                <p className="text-xs text-text-secondary mt-1 font-medium leading-relaxed">
+                  {isDbLocked 
+                    ? "Database is globally locked. All write and edit operations across the entire application are frozen."
+                    : "Database is unlocked. Write and edit operations work normally for authorized users."}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleToggleDbLock}
+              disabled={isTogglingLock}
+              className={clsx(
+                "w-full sm:w-auto px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-lg border",
+                isDbLocked 
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white border-emerald-400/30" 
+                  : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white border-red-400/30"
+              )}
+            >
+              {isTogglingLock ? (
+                <>
+                  <Loader2 className="animate-spin" size={16} />
+                  Updating...
+                </>
+              ) : isDbLocked ? (
+                <>
+                  <Unlock size={16} />
+                  Unlock Database
+                </>
+              ) : (
+                <>
+                  <Lock size={16} />
+                  Lock Database
+                </>
+              )}
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Tabs - Hidden on Desktop */}
       <div className="flex p-1.5 neu-inset rounded-2xl md:hidden">

@@ -8,13 +8,15 @@ import {
   Briefcase,
   Calendar as CalendarIcon,
   Copy,
-  ChevronLeft
+  ChevronLeft,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { students } from '../data/students';
 import { clsx } from 'clsx';
+import { useAuth } from '../context/AuthContext';
 
 type AttendanceStatus = 'present' | 'absent' | 'internal_od' | 'external_od';
 
@@ -100,6 +102,7 @@ const StudentCard: React.FC<{
 
 const MarkAttendance: React.FC = () => {
   const navigate = useNavigate();
+  const { isDbLocked } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -212,6 +215,10 @@ const MarkAttendance: React.FC = () => {
   };
 
   const saveAttendance = async () => {
+    if (isDbLocked) {
+      alert("Database is locked by the developer (2117240070308). Marking or editing attendance is disabled.");
+      return;
+    }
     setIsSaving(true);
     try {
       const absents: string[] = [];
@@ -301,6 +308,13 @@ const MarkAttendance: React.FC = () => {
         </button>
         <h1 className="text-xl font-bold text-text-primary">Mark Attendance</h1>
       </div>
+
+      {isDbLocked && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-center gap-3 text-red-400 font-bold text-xs">
+          <Lock size={18} className="shrink-0" />
+          <span>Database is locked by Developer (2117240070308). Marking attendance is currently read-only.</span>
+        </div>
+      )}
 
       {/* Header Info Panel */}
       <section className="neu-flat rounded-3xl p-6 relative overflow-hidden border border-border-color/10">

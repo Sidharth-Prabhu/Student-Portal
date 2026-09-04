@@ -8,7 +8,7 @@ import {
   signOut,
   type User
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, getDoc, onSnapshot } from 'firebase/firestore';
 
 interface AuthContextType {
   user: Student | null;
@@ -22,6 +22,8 @@ interface AuthContextType {
   adminLogin: (regNum: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
+  isDbLocked: boolean;
+  toggleDbLock: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +39,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isFaculty, setIsFaculty] = useState(() => {
     return localStorage.getItem('faculty_session') === 'true';
   });
+  const [isDbLocked, setIsDbLocked] = useState<boolean>(() => {
+    return localStorage.getItem('db_is_locked') === 'true';
+  });
+
+  useEffect(() => {
+    const lockDocRef = doc(db, 'system_settings', 'db_lock');
+    const unsubscribe = onSnapshot(lockDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const locked = !!docSnap.data()?.isLocked;
+        setIsDbLocked(locked);
+        localStorage.setItem('db_is_locked', String(locked));
+      }
+    }, (err) => {
+      console.error("Failed to listen to DB lock status:", err);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const checkEligibility = useCallback(async (regNum: string) => {
     if (regNum === '2117240070308') {
@@ -55,6 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const logVisit = useCallback(async (student: Student, isLogin: boolean) => {
+    if (isDbLocked) return;
     try {
       const docRef = doc(db, "user_logs", student.regNum);
       await setDoc(docRef, {
@@ -67,7 +87,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error("Firestore operation failed:", err);
     }
-  }, []);
+  }, [isDbLocked]);
+
+  const toggleDbLock = async () => {
+    if (user?.regNum !== '2117240070308') {
+      throw new Error("Unauthorized: Only developer (2117240070308) can lock or unlock the database.");
+    }
+    const nextState = !isDbLocked;
+    const lockDocRef = doc(db, 'system_settings', 'db_lock');
+    await setDoc(lockDocRef, {
+      isLocked: nextState,
+      lockedBy: user.regNum,
+      updatedAt: serverTimestamp(),
+      updatedAtStr: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    });
+    setIsDbLocked(nextState);
+    localStorage.setItem('db_is_locked', String(nextState));
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
@@ -149,7 +185,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       facultyLogin,
       adminLogin,
       logout,
-      isLoading
+      isLoading,
+      isDbLocked,
+      toggleDbLock
     }}>
       {children}
     </AuthContext.Provider>
